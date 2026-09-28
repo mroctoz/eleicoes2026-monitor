@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Apuração Presidencial 2026 - Transmissão Oficial</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Google Fonts: Montserrat -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,600;0,700;0,800;0,900;1,400;1,700;1,900&display=swap" rel="stylesheet">
+
+  <!-- Font Awesome 6 Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- Leaflet CSS & JS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <style>
+    body {
+      font-family: 'Montserrat', sans-serif;
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+      background: radial-gradient(circle at 50% 25%, #23375d 0%, #1a2542 50%, #291a4c 100%);
+      color: #ffffff;
+      min-height: 100vh;
+    }
+
+    .slide-stage {
+      width: 100vw;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-sizing: border-box;
+      padding: 1.5vh 2vw;
+      position: relative;
+    }
+
+    .stage-content {
+      width: 100%;
+      max-width: 1720px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1.5vw;
+    }
+
+    .candidate-card-column {
+      flex: 0 0 380px;
+      max-width: 440px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    @media (min-width: 1536px) {
+      .candidate-card-column {
+        flex: 0 0 440px;
+      }
+    }
+
+    .candidate-photo-box {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      background-color: #ffffff;
+      border: 3px solid rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+      overflow: hidden;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .candidate-photo-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: top center;
+    }
+
+    .center-column {
+      flex: 1 1 760px;
+      max-width: 860px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      height: 94vh;
+      padding: 0.5vh 0;
+    }
+
+    #mapa-ibge {
+      height: 56vh;
+      min-height: 480px;
+      width: 100%;
+      background: transparent !important;
+    }
+    .leaflet-container {
+      background: transparent !important;
+    }
+
+    .ibge-tooltip {
+      background: rgba(15, 23, 42, 0.95) !important;
+      border: 1px solid #334155 !important;
+      color: #ffffff !important;
+      border-radius: 6px !important;
+      padding: 8px 12px !important;
+      font-family: 'Montserrat', sans-serif !important;
+      font-size: 13px !important;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5) !important;
+    }
+    .ibge-tooltip:before {
+      border-top-color: #334155 !important;
+    }
+
+    .screen-control-btn {
+      position: absolute;
+      top: 15px;
+      right: 20px;
+      opacity: 0.35;
+      transition: opacity 0.3s;
+      z-index: 1000;
+    }
+    .screen-control-btn:hover {
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Controles discretos no topo direito -->
+  <div class="screen-control-btn flex items-center space-x-2">
+    <button id="btn-fullscreen" class="bg-black/50 hover:bg-black/80 text-white p-2.5 rounded-lg border border-white/20 transition">
+      <i class="fa-solid fa-expand text-sm"></i>
+    </button>
+    <button id="btn-refresh" class="bg-black/50 hover:bg-black/80 text-white p-2.5 rounded-lg border border-white/20 transition">
+      <i class="fa-solid fa-arrows-rotate text-sm" id="refresh-icon"></i>
+    </button>
+  </div>
+
+  <div class="slide-stage">
+    <div class="stage-content">
+
+      <!-- ================= 1º COLOCADO (ESQUERDA) ================= -->
+      <div class="candidate-card-column">
+        <div class="candidate-photo-box">
+          <img id="cand1-foto" src="/fotos/PT.jpg" alt="1º Colocado" onerror="handleImageError(this, 'PT')">
+        </div>
+        <h2 id="cand1-nome" class="font-black text-4xl lg:text-5xl 2xl:text-6xl uppercase tracking-wider text-white mt-4 sm:mt-5">
+          LULA
+        </h2>
+        <div id="cand1-perc" class="font-black text-6xl lg:text-7xl 2xl:text-8xl text-white tracking-tight leading-none mt-1 sm:mt-2">
+          0,00%
+        </div>
+        <p class="text-white text-lg lg:text-xl 2xl:text-2xl mt-1.5 sm:mt-2">
+          <span class="italic font-normal opacity-90">votos:</span> 
+          <span id="cand1-votos" class="font-extrabold tracking-wide">0</span>
+        </p>
+      </div>
+
+      <!-- ================= CENTRO: RELÓGIO + MAPA + 3º, 4º E 5º ================= -->
+      <div class="center-column">
+        
+        <div class="text-center">
+          <h1 id="label-hora" class="font-black text-6xl lg:text-7xl 2xl:text-8xl tracking-tight text-white leading-none">
+            --:--
+          </h1>
+          <p class="italic font-normal text-2xl lg:text-3xl text-white/90 mt-1">
+            <span id="label-pst">0,00%</span> apurado
+          </p>
+        </div>
+
+        <div class="w-full flex items-center justify-center my-auto">
+          <div id="mapa-ibge"></div>
+        </div>
+
+        <!-- Três colocados seguintes -->
+        <div class="w-full grid grid-cols-3 gap-4 text-center pb-2">
+          <div class="flex flex-col items-center">
+            <span id="cand3-nome" class="font-black text-xl lg:text-2xl 2xl:text-3xl uppercase tracking-wide text-white">---</span>
+            <span id="cand3-perc" class="font-black text-2xl lg:text-3xl 2xl:text-4xl text-white mt-0.5">0,00%</span>
+          </div>
+          <div class="flex flex-col items-center">
+            <span id="cand4-nome" class="font-black text-xl lg:text-2xl 2xl:text-3xl uppercase tracking-wide text-white">---</span>
+            <span id="cand4-perc" class="font-black text-2xl lg:text-3xl 2xl:text-4xl text-white mt-0.5">0,00%</span>
+          </div>
+          <div class="flex flex-col items-center">
+            <span id="cand5-nome" class="font-black text-xl lg:text-2xl 2xl:text-3xl uppercase tracking-wide text-white">---</span>
+            <span id="cand5-perc" class="font-black text-2xl lg:text-3xl 2xl:text-4xl text-white mt-0.5">0,00%</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ================= 2º COLOCADO (DIREITA) ================= -->
+      <div class="candidate-card-column">
+        <div class="candidate-photo-box">
+          <img id="cand2-foto" src="/fotos/PL.jpg" alt="2º Colocado" onerror="handleImageError(this, 'PL')">
+        </div>
+        <h2 id="cand2-nome" class="font-black text-4xl lg:text-5xl 2xl:text-6xl uppercase tracking-wider text-white mt-4 sm:mt-5">
+          FLAVIO
+        </h2>
+        <div id="cand2-perc" class="font-black text-6xl lg:text-7xl 2xl:text-8xl text-white tracking-tight leading-none mt-1 sm:mt-2">
+          0,00%
+        </div>
+        <p class="text-white text-lg lg:text-xl 2xl:text-2xl mt-1.5 sm:mt-2">
+          <span class="italic font-normal opacity-90">votos:</span> 
+          <span id="cand2-votos" class="font-extrabold tracking-wide">0</span>
+        </p>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    const IBGE_CODES = {
+      11: "RO", 12: "AC", 13: "AM", 14: "RR", 15: "PA", 16: "AP", 17: "TO",
+      21: "MA", 22: "PI", 23: "CE", 24: "RN", 25: "PB", 26: "PE", 27: "AL", 28: "SE", 29: "BA",
+      31: "MG", 32: "ES", 33: "RJ", 35: "SP",
+      41: "PR", 42: "SC", 43: "RS",
+      50: "MS", 51: "MT", 52: "GO", 53: "DF"
+    };
+
+    let map = null;
+    let geojsonLayer = null;
+    let electionData = null;
+
+    function initMap() {
+      map = L.map('mapa-ibge', {
+        center: [-14.5, -53.0],
+        zoom: 4.2,
+        zoomSnap: 0.05,
+        zoomDelta: 0.1,
+        zoomControl: false,
+        attributionControl: false,
+        dragging: false,
+        scrollWheelZoom: false,
+        doubleClickZoom: false,
+        boxZoom: false,
+        touchZoom: false
+      });
+
+      // Consome a rota local protegida (/api/malha-ibge) em vez de chamar o IBGE diretamente
+      fetch('/api/malha-ibge')
+        .then(res => res.json())
+        .then(geojsonData => {
+          geojsonLayer = L.geoJSON(geojsonData, {
+            style: styleFeature,
+            onEachFeature: onEachFeature
+          }).addTo(map);
+
+          fitMapToBounds();
+        })
+        .catch(err => console.error("Falha ao carregar malha do IBGE:", err));
+    }
+
+    function fitMapToBounds() {
+      if (map && geojsonLayer) {
+        map.fitBounds(geojsonLayer.getBounds(), { padding: [0, 0] });
+        map.invalidateSize();
+      }
+    }
+
+    function getColorByUf(ufSigla) {
+      if (!electionData || !electionData.estados || !electionData.estados[ufSigla]) {
+        return "#253456";
+      }
+      const st = electionData.estados[ufSigla];
+      return (st.leader && st.leader.color) ? st.leader.color : "#253456";
+    }
+
+    function styleFeature(feature) {
+      const ufCode = feature.properties.codarea;
+      const ufSigla = IBGE_CODES[ufCode];
+      return {
+        fillColor: getColorByUf(ufSigla),
+        weight: 1.2,
+        opacity: 0.7,
+        color: '#ffffff',
+        fillOpacity: 0.95
+      };
+    }
+
+    function onEachFeature(feature, layer) {
+      const ufCode = feature.properties.codarea;
+      const ufSigla = IBGE_CODES[ufCode];
+
+      layer.on({
+        mouseover: function(e) {
+          const l = e.target;
+          l.setStyle({ weight: 2.5, color: '#38bdf8', fillOpacity: 1.0 });
+          l.bringToFront();
+
+          const info = (electionData && electionData.estados) ? electionData.estados[ufSigla] : null;
+          let tip = `<strong>${ufSigla}</strong><br/>`;
+          if (info && info.leader && info.leader.shortName) {
+            tip += `Líder: <span style="font-weight:bold; color:${info.leader.color}">${info.leader.shortName}</span> (${info.leader.percentual}%)<br/>`;
+            tip += `Urnas Apuradas: ${info.pst}%`;
+          } else {
+            tip += "Aguardando totalização";
+          }
+          layer.bindTooltip(tip, { className: 'ibge-tooltip', sticky: true }).openTooltip();
+        },
+        mouseout: function(e) {
+          if (geojsonLayer) {
+            geojsonLayer.resetStyle(e.target);
+          }
+        }
+      });
+    }
+
+    function handleImageError(imgEl, partido) {
+      imgEl.onerror = null;
+      imgEl.src = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400"><rect width="100%" height="100%" fill="%231e293b"/><text x="50%" y="45%" font-family="Montserrat, Arial" font-weight="900" font-size="52" fill="%23ffffff" text-anchor="middle">${partido}</text><text x="50%" y="60%" font-family="Montserrat, Arial" font-weight="600" font-size="18" fill="%2394a3b8" text-anchor="middle">FOTO NÃO ENCONTRADA</text></svg>`;
+    }
+
+    async function syncTseData() {
+      const icon = document.getElementById('refresh-icon');
+      icon.classList.add('fa-spin');
+
+      try {
+        const res = await fetch('/api/eleicoes');
+        const data = await res.json();
+        electionData = data;
+
+        document.getElementById('label-hora').innerText = data.hora || "--:--";
+        document.getElementById('label-pst').innerText = `${data.pst || '0,00'}%`;
+
+        const cands = data.candidatos || [];
+
+        // 1º Colocado (Esquerda)
+        if (cands.length > 0) {
+          const c1 = cands[0];
+          document.getElementById('cand1-nome').innerText = c1.shortName;
+          document.getElementById('cand1-perc').innerText = `${c1.pvap}%`;
+          document.getElementById('cand1-votos').innerText = parseInt(c1.vap || '0', 10).toLocaleString('pt-BR');
+          document.getElementById('cand1-foto').src = c1.foto;
+        }
+
+        // 2º Colocado (Direita)
+        if (cands.length > 1) {
+          const c2 = cands[1];
+          document.getElementById('cand2-nome').innerText = c2.shortName;
+          document.getElementById('cand2-perc').innerText = `${c2.pvap}%`;
+          document.getElementById('cand2-votos').innerText = parseInt(c2.vap || '0', 10).toLocaleString('pt-BR');
+          document.getElementById('cand2-foto').src = c2.foto;
+        }
+
+        // 3º, 4º e 5º Colocados
+        if (cands.length > 2) {
+          document.getElementById('cand3-nome').innerText = cands[2].shortName;
+          document.getElementById('cand3-perc').innerText = `${cands[2].pvap}%`;
+        }
+        if (cands.length > 3) {
+          document.getElementById('cand4-nome').innerText = cands[3].shortName;
+          document.getElementById('cand4-perc').innerText = `${cands[3].pvap}%`;
+        }
+        if (cands.length > 4) {
+          document.getElementById('cand5-nome').innerText = cands[4].shortName;
+          document.getElementById('cand5-perc').innerText = `${cands[4].pvap}%`;
+        }
+
+        if (geojsonLayer) {
+          geojsonLayer.eachLayer(layer => geojsonLayer.resetStyle(layer));
+        }
+
+      } catch (err) {
+        console.error("Falha na sincronização oficial do TSE:", err);
+      } finally {
+        setTimeout(() => icon.classList.remove('fa-spin'), 500);
+      }
+    }
+
+    document.getElementById('btn-fullscreen').addEventListener('click', () => {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(e => console.log(e));
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      }
+    });
+
+    document.getElementById('btn-refresh').addEventListener('click', syncTseData);
+
+    window.addEventListener('DOMContentLoaded', () => {
+      initMap();
+      syncTseData();
+      setInterval(syncTseData, 15000);
+    });
+
+    window.addEventListener('resize', () => {
+      fitMapToBounds();
+    });
+  </script>
+</body>
+</html>
