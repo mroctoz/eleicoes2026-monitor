@@ -11,19 +11,19 @@ const ESTADOS = [
 ];
 
 const CANDIDATOS_CONFIG = [
-  { shortName: "LULA", nome: "Lula", partido: "PT", numero: "13", color: "#dc2626" },
-  { shortName: "FLAVIO", nome: "Flávio Bolsonaro", partido: "PL", numero: "22", color: "#2563eb" },
-  { shortName: "CAIADO", nome: "Caiado", partido: "PSD", numero: "55", color: "#0284c7" },
-  { shortName: "ZEMA", nome: "Zema", partido: "Novo", numero: "30", color: "#ea580c" },
-  { shortName: "RENAN", nome: "Renan Santos", partido: "Missão", numero: "14", color: "#d97706" },
-  { shortName: "CURY", nome: "Cury", partido: "Avante", numero: "70", color: "#059669" },
-  { shortName: "SAMARA", nome: "Samara Martins", partido: "UP", numero: "80", color: "#e11d48" },
-  { shortName: "HERTZ", nome: "Hertz Dias", partido: "PSTU", numero: "16", color: "#b91c1c" },
-  { shortName: "EDMILSON", nome: "Edmilson Costa", partido: "PCB", numero: "21", color: "#991b1b" },
-  { shortName: "RUI PIMENTA", nome: "Rui Costa Pimenta", partido: "PCO", numero: "29", color: "#7f1d1d" },
-  { shortName: "AVALANCHE", nome: "Leonardo Avalanche", partido: "PRTB", numero: "28", color: "#ca8a04" },
-  { shortName: "GRASSI", nome: "Grassi", partido: "Democrata", numero: "35", color: "#1d4ed8" },
-  { shortName: "CLARIANA", nome: "Clariana Barão", partido: "DC", numero: "27", color: "#0891b2" }
+  { shortName: "LULA", nome: "Lula", partido: "PT", fotoArquivo: "PT", numero: "13", color: "#dc2626" },
+  { shortName: "FLAVIO", nome: "Flávio Bolsonaro", partido: "PL", fotoArquivo: "PL", numero: "22", color: "#2563eb" },
+  { shortName: "CAIADO", nome: "Caiado", partido: "PSD", fotoArquivo: "PSD", numero: "55", color: "#0284c7" },
+  { shortName: "ZEMA", nome: "Zema", partido: "Novo", fotoArquivo: "Novo", numero: "30", color: "#ea580c" },
+  { shortName: "RENAN", nome: "Renan Santos", partido: "Missão", fotoArquivo: "Missao", numero: "14", color: "#d97706" },
+  { shortName: "CURY", nome: "Cury", partido: "Avante", fotoArquivo: "Avante", numero: "70", color: "#059669" },
+  { shortName: "SAMARA", nome: "Samara Martins", partido: "UP", fotoArquivo: "UP", numero: "80", color: "#e11d48" },
+  { shortName: "HERTZ", nome: "Hertz Dias", partido: "PSTU", fotoArquivo: "PSTU", numero: "16", color: "#b91c1c" },
+  { shortName: "EDMILSON", nome: "Edmilson Costa", partido: "PCB", fotoArquivo: "PCB", numero: "21", color: "#991b1b" },
+  { shortName: "RUI PIMENTA", nome: "Rui Costa Pimenta", partido: "PCO", fotoArquivo: "PCO", numero: "29", color: "#7f1d1d" },
+  { shortName: "AVALANCHE", nome: "Leonardo Avalanche", partido: "PRTB", fotoArquivo: "PRTB", numero: "28", color: "#ca8a04" },
+  { shortName: "GRASSI", nome: "Grassi", partido: "Democrata", fotoArquivo: "Democrata", numero: "35", color: "#1d4ed8" },
+  { shortName: "CLARIANA", nome: "Clariana Barão", partido: "DC", fotoArquivo: "DC", numero: "27", color: "#0891b2" }
 ];
 
 function matchCandidate(tseCand) {
@@ -47,6 +47,7 @@ function matchCandidate(tseCand) {
     shortName: (tseCand.nm || 'CANDIDATO').split(' ')[0].toUpperCase(),
     nome: tseCand.nm || 'Candidato',
     partido: coligacao.split(' ')[0] || 'OUTRO',
+    fotoArquivo: coligacao.split(' ')[0] || 'OUTRO',
     numero: numStr,
     color: '#475569'
   };
@@ -63,7 +64,6 @@ async function fetchTseScope(scope) {
         'Accept': 'application/json, text/plain, */*'
       },
       cf: {
-        // Cache na borda da Cloudflare por 15 segundos
         cacheTtl: 15,
         cacheEverything: true
       }
@@ -99,7 +99,7 @@ export async function onRequestGet() {
           shortName: c.shortName,
           nome: c.nome,
           partido: c.partido,
-          foto: `/fotos/${c.partido}.jpg`,
+          fotoArquivo: c.fotoArquivo,
           vap: "0",
           pvap: "0,00",
           color: c.color,
@@ -116,7 +116,7 @@ export async function onRequestGet() {
       });
     }
 
-    // Consulta aos 27 estados
+    // Consulta às 27 UFs
     const ufPromises = ESTADOS.map(async (uf) => {
       const data = await fetchTseScope(uf);
       return { uf: uf.toUpperCase(), data };
@@ -144,14 +144,14 @@ export async function onRequestGet() {
       }
     });
 
-    // Ordenação decrescente rigorosa por votos apurados nacionais
+    // Ordenação decrescente rigorosa por votos válidos
     const candidatosProcessados = (brasilData.cand || []).map(tseCand => {
       const conf = matchCandidate(tseCand);
       return {
         shortName: conf.shortName,
         nome: conf.nome,
         partido: conf.partido,
-        foto: `/fotos/${c.partido}.jpg`,
+        fotoArquivo: conf.fotoArquivo,
         vap: tseCand.vap || '0',
         pvap: tseCand.pvap || '0,00',
         color: conf.color,
