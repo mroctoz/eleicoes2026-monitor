@@ -25,15 +25,16 @@
       font-family: 'Montserrat', sans-serif;
       margin: 0;
       padding: 0;
-      overflow-x: hidden;
+      overflow: hidden;
       background: radial-gradient(circle at 50% 25%, #23375d 0%, #1a2542 50%, #291a4c 100%);
       color: #ffffff;
-      min-height: 100vh;
+      height: 100vh;
+      width: 100vw;
     }
 
     .slide-stage {
       width: 100vw;
-      min-height: 100vh;
+      height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -136,8 +137,8 @@
 </head>
 <body>
 
-  <!-- Controles de tela cheia e atualizar -->
-  <div class="screen-control-btn flex items-center space-x-2">
+  <!-- Controles discretos (automaticamente ocultados no OBS se a URL tiver ?obs=true) -->
+  <div id="painel-controles" class="screen-control-btn flex items-center space-x-2">
     <button id="btn-fullscreen" class="bg-black/50 hover:bg-black/80 text-white p-2.5 rounded-lg border border-white/20 transition">
       <i class="fa-solid fa-expand text-sm"></i>
     </button>
@@ -233,7 +234,13 @@
     let geojsonLayer = null;
     let electionData = null;
 
-    // Carregador inteligente com tentativa em múltiplas extensões e formatos
+    // Detecta se a página foi aberta com ?obs=true para ocultar controles
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('obs') === 'true' || urlParams.get('clean') === 'true') {
+      const controles = document.getElementById('painel-controles');
+      if (controles) controles.style.display = 'none';
+    }
+
     function loadCandidatePhoto(imgEl, fileBase) {
       if (!fileBase) return;
       const cleanBase = fileBase.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
@@ -256,7 +263,6 @@
           tempImg.onerror = tryNext;
           tempImg.src = nextSrc;
         } else {
-          // Fallback elegante caso a foto realmente não exista
           imgEl.src = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400"><rect width="100%" height="100%" fill="%231e293b"/><text x="50%" y="45%" font-family="Montserrat, Arial" font-weight="900" font-size="52" fill="%23ffffff" text-anchor="middle">${cleanBase}</text><text x="50%" y="60%" font-family="Montserrat, Arial" font-weight="600" font-size="16" fill="%2394a3b8" text-anchor="middle">FOTO NÃO ENCONTRADA</text></svg>`;
         }
       }
@@ -349,7 +355,7 @@
 
     async function syncTseData() {
       const icon = document.getElementById('refresh-icon');
-      icon.classList.add('fa-spin');
+      if (icon) icon.classList.add('fa-spin');
 
       try {
         const res = await fetch('/api/eleicoes');
@@ -400,21 +406,27 @@
       } catch (err) {
         console.error("Falha na sincronização oficial do TSE:", err);
       } finally {
-        setTimeout(() => icon.classList.remove('fa-spin'), 500);
+        if (icon) {
+          setTimeout(() => icon.classList.remove('fa-spin'), 500);
+        }
       }
     }
 
-    document.getElementById('btn-fullscreen').addEventListener('click', () => {
-      if (!document.fullscreenElement) {
-        document.documentElement.requestFullscreen().catch(e => console.log(e));
-      } else {
-        if (document.exitFullscreen) {
-          document.exitFullscreen();
+    const btnFull = document.getElementById('btn-fullscreen');
+    if (btnFull) {
+      btnFull.addEventListener('click', () => {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen().catch(e => console.log(e));
+        } else {
+          if (document.exitFullscreen) document.exitFullscreen();
         }
-      }
-    });
+      });
+    }
 
-    document.getElementById('btn-refresh').addEventListener('click', syncTseData);
+    const btnRef = document.getElementById('btn-refresh');
+    if (btnRef) {
+      btnRef.addEventListener('click', syncTseData);
+    }
 
     window.addEventListener('DOMContentLoaded', () => {
       initMap();
