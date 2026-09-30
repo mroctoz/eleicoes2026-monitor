@@ -8,10 +8,10 @@
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- Google Fonts: Montserrat & Inter -->
+  <!-- Google Fonts: Montserrat (Pesos 800 e 900) & Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,700;0,800;0,900;1,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,700;0,800;0,900;1,800;1,900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <!-- Font Awesome 6 Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -32,7 +32,7 @@
       font-family: 'Montserrat', sans-serif;
     }
 
-    /* Container de tela cheia sem barras de rolagem */
+    /* Container de tela cheia 16:9 sem scrollbars */
     .slide-stage {
       width: 100vw;
       height: 100vh;
@@ -40,32 +40,32 @@
       flex-direction: column;
       justify-content: space-between;
       box-sizing: border-box;
-      padding: 1.8vh 2.2vw;
+      padding: 1.5vh 1.8vw;
       position: relative;
     }
 
     /* Balão individual do estado */
     .state-balloon {
-      background: rgba(17, 24, 39, 0.88);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      border-radius: 14px;
-      backdrop-filter: blur(12px);
-      box-shadow: 0 15px 30px -10px rgba(0, 0, 0, 0.6);
+      background: rgba(15, 23, 42, 0.90);
+      border: 1.5px solid rgba(255, 255, 255, 0.14);
+      border-radius: 16px;
+      backdrop-filter: blur(14px);
+      box-shadow: 0 20px 35px -10px rgba(0, 0, 0, 0.7);
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      padding: 1.4vh 1.2vw;
-      transition: all 0.3s ease;
+      padding: 1.6vh 1.3vw;
+      transition: transform 0.2s ease, border-color 0.2s ease;
       position: relative;
       overflow: hidden;
     }
 
     .state-balloon:hover {
-      border-color: rgba(56, 189, 248, 0.4);
+      border-color: rgba(56, 189, 248, 0.5);
       transform: translateY(-2px);
     }
 
-    /* Indicador luminoso pulsante */
+    /* Efeito de brilho pulsante do Ao Vivo */
     .pulse-dot {
       animation: pulseAnimation 1.6s cubic-bezier(0.4, 0, 0.6, 1) infinite;
     }
@@ -74,9 +74,8 @@
       50% { opacity: .25; }
     }
 
-    /* Painel discreto de botões */
     .screen-control-btn {
-      opacity: 0.4;
+      opacity: 0.35;
       transition: opacity 0.3s;
     }
     .screen-control-btn:hover {
@@ -89,416 +88,448 @@
   <div class="slide-stage">
 
     <!-- Header do Slide -->
-    <header class="flex items-center justify-between h-[6vh] min-h-[44px] border-b border-white/10 pb-2">
+    <header class="flex items-center justify-between h-[6vh] min-h-[46px] border-b border-white/10 pb-2 px-1">
       
       <!-- Lado Esquerdo: Identificação Oficial -->
       <div class="flex items-center space-x-3">
-        <div class="bg-blue-600 text-white w-9 h-9 rounded-lg flex items-center justify-center font-black text-sm shadow-md">
+        <div class="bg-blue-600 text-white w-10 h-10 rounded-xl flex items-center justify-center font-black text-base shadow-md">
           <i class="fa-solid fa-landmark"></i>
         </div>
         <div>
-          <div class="flex items-center space-x-2">
-            <h1 class="heading-font text-lg lg:text-xl font-black uppercase tracking-wider text-white">Eleições 2026 &bull; Governadores</h1>
-            <span class="bg-red-500/20 text-red-400 text-[10px] font-bold px-2 py-0.5 rounded-full border border-red-500/30 flex items-center gap-1">
-              <span class="w-1.5 h-1.5 rounded-full bg-red-500 pulse-dot"></span>
+          <div class="flex items-center space-x-2.5">
+            <h1 class="heading-font text-lg lg:text-2xl font-black uppercase tracking-wider text-white">Eleições 2026 &bull; Governadores</h1>
+            <span class="bg-red-500/20 text-red-400 text-xs font-bold px-2.5 py-0.5 rounded-full border border-red-500/30 flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-red-500 pulse-dot"></span>
               AO VIVO
             </span>
           </div>
-          <p class="text-[11px] text-gray-400">Totalização Oficial nos 8 Maiores Colégios Eleitorais do País</p>
+          <p class="text-xs text-gray-400 font-medium">Apuração Oficial nos 8 Maiores Colégios Eleitorais</p>
         </div>
       </div>
 
-      <!-- Centro: Horário Oficial da Apuração -->
+      <!-- Centro: Horário Oficial do TSE -->
       <div class="text-center">
         <div class="flex items-baseline justify-center space-x-2">
-          <span class="text-xs text-gray-400 uppercase font-semibold">TSE:</span>
-          <span id="label-hora" class="heading-font text-2xl lg:text-3xl font-black text-white leading-none">--:--</span>
+          <span class="text-xs text-gray-400 uppercase font-bold tracking-wider">Atualização TSE:</span>
+          <span id="label-hora" class="heading-font text-2xl lg:text-4xl font-black text-white leading-none">--:--</span>
         </div>
       </div>
 
-      <!-- Lado Direito: Navegação entre Telas e Botões -->
-      <div id="painel-controles" class="flex items-center space-x-2 screen-control-btn">
-        <a href="/" class="bg-gray-800 hover:bg-gray-700 text-gray-200 text-xs font-semibold py-1.5 px-3 rounded-lg border border-gray-700 transition flex items-center gap-1.5">
+      <!-- Lado Direito: Navegação e Controles (ocultados automaticamente no OBS com ?obs=true) -->
+      <div id="painel-controles" class="flex items-center space-x-2.5 screen-control-btn">
+        <a href="/" class="bg-gray-800 hover:bg-gray-700 text-gray-200 text-xs font-bold py-2 px-3.5 rounded-lg border border-gray-700 transition flex items-center gap-1.5 shadow">
           <i class="fa-solid fa-user-tie text-blue-400"></i>
-          <span>Presidente (Slide)</span>
+          <span>Presidente</span>
         </a>
 
-        <a href="/detalhes.html" class="bg-gray-800 hover:bg-gray-700 text-gray-200 text-xs font-semibold py-1.5 px-3 rounded-lg border border-gray-700 transition flex items-center gap-1.5">
+        <a href="/detalhes.html" class="bg-gray-800 hover:bg-gray-700 text-gray-200 text-xs font-bold py-2 px-3.5 rounded-lg border border-gray-700 transition flex items-center gap-1.5 shadow">
           <i class="fa-solid fa-chart-line text-emerald-400"></i>
-          <span>Painel Completo</span>
+          <span>Painel Detalhado</span>
         </a>
 
-        <button id="btn-fullscreen" class="bg-black/50 hover:bg-black/80 text-white p-2 rounded-lg border border-white/20 transition">
+        <button id="btn-fullscreen" class="bg-black/50 hover:bg-black/80 text-white p-2.5 rounded-lg border border-white/20 transition">
           <i class="fa-solid fa-expand text-xs"></i>
         </button>
-        <button id="btn-refresh" class="bg-black/50 hover:bg-black/80 text-white p-2 rounded-lg border border-white/20 transition">
+        <button id="btn-refresh" class="bg-black/50 hover:bg-black/80 text-white p-2.5 rounded-lg border border-white/20 transition">
           <i class="fa-solid fa-arrows-rotate text-xs" id="refresh-icon"></i>
         </button>
       </div>
 
     </header>
 
-    <!-- Grid dos 8 Balões (4 colunas x 2 linhas) -->
-    <main class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 lg:gap-4 h-[89vh] py-1">
+    <!-- Grid dos 8 Balões de Estados (4 colunas x 2 linhas) -->
+    <main class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-4.5 h-[89vh] py-1.5">
       
       <!-- 1. SÃO PAULO (SP) -->
       <div class="state-balloon" id="card-sp">
-        <div class="flex items-center justify-between border-b border-white/10 pb-2">
-          <div class="flex items-center space-x-2">
-            <span class="heading-font bg-blue-600/30 text-blue-400 border border-blue-500/40 text-xs font-black px-2 py-0.5 rounded">SP</span>
-            <span class="heading-font font-extrabold text-sm text-white">São Paulo</span>
+        <div class="flex items-center justify-between border-b border-white/10 pb-2.5">
+          <div class="flex items-center space-x-2.5">
+            <span class="heading-font bg-blue-600 text-white text-xs font-black px-2.5 py-1 rounded shadow">SP</span>
+            <span class="heading-font font-black text-base text-white tracking-wide">São Paulo</span>
           </div>
-          <span class="text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded" id="pst-sp">0,00% apurado</span>
+          <span class="heading-font text-xs font-black text-emerald-400 bg-emerald-500/15 border border-emerald-500/30 px-2.5 py-1 rounded tracking-wide" id="pst-sp">0,00% apurado</span>
         </div>
 
-        <div class="space-y-1.5 my-auto">
-          <!-- 1º Colocado -->
-          <div class="bg-white/5 p-2 rounded-lg border-l-4 border-blue-500 flex items-center justify-between">
-            <div class="truncate mr-2">
-              <div class="flex items-center space-x-1.5">
-                <span class="text-[10px] font-black text-yellow-400 uppercase">#1</span>
-                <h3 class="heading-font font-black text-sm text-white truncate" id="cand1-nome-sp">Aguardando dados</h3>
+        <div class="space-y-2.5 my-auto">
+          <!-- 1º Colocado (Líder) -->
+          <div class="bg-white/[0.07] p-2.5 rounded-xl border-l-[5px] border-blue-500 flex items-center justify-between">
+            <div class="truncate mr-3">
+              <div class="flex items-center space-x-2">
+                <span class="bg-yellow-500/20 text-yellow-400 border border-yellow-500/40 text-[10px] font-black px-1.5 py-0.2 rounded uppercase">1º</span>
+                <h3 class="heading-font font-black text-base lg:text-lg text-white truncate uppercase tracking-tight" id="cand1-nome-sp">Aguardando dados</h3>
               </div>
-              <p class="text-[10px] text-gray-400" id="cand1-partido-sp">Partido --</p>
+              <div class="flex items-center space-x-2 mt-1">
+                <span class="text-[11px] font-black text-white bg-blue-600 px-1.5 py-0.2 rounded" id="cand1-partido-sp">--</span>
+                <span class="text-xs text-gray-300 font-semibold" id="cand1-votos-sp">0 votos</span>
+              </div>
             </div>
             <div class="text-right flex-shrink-0">
-              <span class="heading-font text-xl lg:text-2xl font-black text-white leading-none block" id="cand1-perc-sp">0,00%</span>
-              <span class="text-[10px] text-gray-400" id="cand1-votos-sp">0 votos</span>
+              <span class="heading-font text-3xl lg:text-4xl 2xl:text-5xl font-black text-white leading-none tracking-tight block" id="cand1-perc-sp">0,00%</span>
             </div>
           </div>
 
           <!-- 2º Colocado -->
-          <div class="bg-white/5 p-2 rounded-lg border-l-4 border-gray-600 flex items-center justify-between">
-            <div class="truncate mr-2">
-              <div class="flex items-center space-x-1.5">
-                <span class="text-[10px] font-bold text-gray-400 uppercase">#2</span>
-                <h4 class="heading-font font-bold text-xs text-gray-200 truncate" id="cand2-nome-sp">Aguardando dados</h4>
+          <div class="bg-white/[0.04] p-2.5 rounded-xl border-l-[5px] border-gray-600 flex items-center justify-between">
+            <div class="truncate mr-3">
+              <div class="flex items-center space-x-2">
+                <span class="bg-gray-700 text-gray-300 text-[10px] font-black px-1.5 py-0.2 rounded uppercase">2º</span>
+                <h4 class="heading-font font-extrabold text-sm lg:text-base text-gray-200 truncate uppercase tracking-tight" id="cand2-nome-sp">Aguardando dados</h4>
               </div>
-              <p class="text-[10px] text-gray-400" id="cand2-partido-sp">Partido --</p>
+              <div class="flex items-center space-x-2 mt-1">
+                <span class="text-[11px] font-bold text-gray-200 bg-gray-700 px-1.5 py-0.2 rounded" id="cand2-partido-sp">--</span>
+                <span class="text-xs text-gray-400 font-semibold" id="cand2-votos-sp">0 votos</span>
+              </div>
             </div>
             <div class="text-right flex-shrink-0">
-              <span class="heading-font text-lg font-black text-gray-300 leading-none block" id="cand2-perc-sp">0,00%</span>
-              <span class="text-[10px] text-gray-400" id="cand2-votos-sp">0 votos</span>
+              <span class="heading-font text-2xl lg:text-3xl 2xl:text-4xl font-black text-gray-300 leading-none tracking-tight block" id="cand2-perc-sp">0,00%</span>
             </div>
           </div>
         </div>
 
-        <div class="w-full bg-gray-800 rounded-full h-1 overflow-hidden">
+        <div class="w-full bg-gray-800 rounded-full h-1.5 overflow-hidden">
           <div class="bg-blue-500 h-full transition-all duration-700" id="bar-sp" style="width: 0%"></div>
         </div>
       </div>
 
       <!-- 2. MINAS GERAIS (MG) -->
       <div class="state-balloon" id="card-mg">
-        <div class="flex items-center justify-between border-b border-white/10 pb-2">
-          <div class="flex items-center space-x-2">
-            <span class="heading-font bg-red-600/30 text-red-400 border border-red-500/40 text-xs font-black px-2 py-0.5 rounded">MG</span>
-            <span class="heading-font font-extrabold text-sm text-white">Minas Gerais</span>
+        <div class="flex items-center justify-between border-b border-white/10 pb-2.5">
+          <div class="flex items-center space-x-2.5">
+            <span class="heading-font bg-red-600 text-white text-xs font-black px-2.5 py-1 rounded shadow">MG</span>
+            <span class="heading-font font-black text-base text-white tracking-wide">Minas Gerais</span>
           </div>
-          <span class="text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded" id="pst-mg">0,00% apurado</span>
+          <span class="heading-font text-xs font-black text-emerald-400 bg-emerald-500/15 border border-emerald-500/30 px-2.5 py-1 rounded tracking-wide" id="pst-mg">0,00% apurado</span>
         </div>
 
-        <div class="space-y-1.5 my-auto">
-          <div class="bg-white/5 p-2 rounded-lg border-l-4 border-red-500 flex items-center justify-between">
-            <div class="truncate mr-2">
-              <div class="flex items-center space-x-1.5">
-                <span class="text-[10px] font-black text-yellow-400 uppercase">#1</span>
-                <h3 class="heading-font font-black text-sm text-white truncate" id="cand1-nome-mg">Aguardando dados</h3>
+        <div class="space-y-2.5 my-auto">
+          <div class="bg-white/[0.07] p-2.5 rounded-xl border-l-[5px] border-red-500 flex items-center justify-between">
+            <div class="truncate mr-3">
+              <div class="flex items-center space-x-2">
+                <span class="bg-yellow-500/20 text-yellow-400 border border-yellow-500/40 text-[10px] font-black px-1.5 py-0.2 rounded uppercase">1º</span>
+                <h3 class="heading-font font-black text-base lg:text-lg text-white truncate uppercase tracking-tight" id="cand1-nome-mg">Aguardando dados</h3>
               </div>
-              <p class="text-[10px] text-gray-400" id="cand1-partido-mg">Partido --</p>
+              <div class="flex items-center space-x-2 mt-1">
+                <span class="text-[11px] font-black text-white bg-red-600 px-1.5 py-0.2 rounded" id="cand1-partido-mg">--</span>
+                <span class="text-xs text-gray-300 font-semibold" id="cand1-votos-mg">0 votos</span>
+              </div>
             </div>
             <div class="text-right flex-shrink-0">
-              <span class="heading-font text-xl lg:text-2xl font-black text-white leading-none block" id="cand1-perc-mg">0,00%</span>
-              <span class="text-[10px] text-gray-400" id="cand1-votos-mg">0 votos</span>
+              <span class="heading-font text-3xl lg:text-4xl 2xl:text-5xl font-black text-white leading-none tracking-tight block" id="cand1-perc-mg">0,00%</span>
             </div>
           </div>
 
-          <div class="bg-white/5 p-2 rounded-lg border-l-4 border-gray-600 flex items-center justify-between">
-            <div class="truncate mr-2">
-              <div class="flex items-center space-x-1.5">
-                <span class="text-[10px] font-bold text-gray-400 uppercase">#2</span>
-                <h4 class="heading-font font-bold text-xs text-gray-200 truncate" id="cand2-nome-mg">Aguardando dados</h4>
+          <div class="bg-white/[0.04] p-2.5 rounded-xl border-l-[5px] border-gray-600 flex items-center justify-between">
+            <div class="truncate mr-3">
+              <div class="flex items-center space-x-2">
+                <span class="bg-gray-700 text-gray-300 text-[10px] font-black px-1.5 py-0.2 rounded uppercase">2º</span>
+                <h4 class="heading-font font-extrabold text-sm lg:text-base text-gray-200 truncate uppercase tracking-tight" id="cand2-nome-mg">Aguardando dados</h4>
               </div>
-              <p class="text-[10px] text-gray-400" id="cand2-partido-mg">Partido --</p>
+              <div class="flex items-center space-x-2 mt-1">
+                <span class="text-[11px] font-bold text-gray-200 bg-gray-700 px-1.5 py-0.2 rounded" id="cand2-partido-mg">--</span>
+                <span class="text-xs text-gray-400 font-semibold" id="cand2-votos-mg">0 votos</span>
+              </div>
             </div>
             <div class="text-right flex-shrink-0">
-              <span class="heading-font text-lg font-black text-gray-300 leading-none block" id="cand2-perc-mg">0,00%</span>
-              <span class="text-[10px] text-gray-400" id="cand2-votos-mg">0 votos</span>
+              <span class="heading-font text-2xl lg:text-3xl 2xl:text-4xl font-black text-gray-300 leading-none tracking-tight block" id="cand2-perc-mg">0,00%</span>
             </div>
           </div>
         </div>
 
-        <div class="w-full bg-gray-800 rounded-full h-1 overflow-hidden">
+        <div class="w-full bg-gray-800 rounded-full h-1.5 overflow-hidden">
           <div class="bg-red-500 h-full transition-all duration-700" id="bar-mg" style="width: 0%"></div>
         </div>
       </div>
 
       <!-- 3. BAHIA (BA) -->
       <div class="state-balloon" id="card-ba">
-        <div class="flex items-center justify-between border-b border-white/10 pb-2">
-          <div class="flex items-center space-x-2">
-            <span class="heading-font bg-red-600/30 text-red-400 border border-red-500/40 text-xs font-black px-2 py-0.5 rounded">BA</span>
-            <span class="heading-font font-extrabold text-sm text-white">Bahia</span>
+        <div class="flex items-center justify-between border-b border-white/10 pb-2.5">
+          <div class="flex items-center space-x-2.5">
+            <span class="heading-font bg-red-600 text-white text-xs font-black px-2.5 py-1 rounded shadow">BA</span>
+            <span class="heading-font font-black text-base text-white tracking-wide">Bahia</span>
           </div>
-          <span class="text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded" id="pst-ba">0,00% apurado</span>
+          <span class="heading-font text-xs font-black text-emerald-400 bg-emerald-500/15 border border-emerald-500/30 px-2.5 py-1 rounded tracking-wide" id="pst-ba">0,00% apurado</span>
         </div>
 
-        <div class="space-y-1.5 my-auto">
-          <div class="bg-white/5 p-2 rounded-lg border-l-4 border-red-500 flex items-center justify-between">
-            <div class="truncate mr-2">
-              <div class="flex items-center space-x-1.5">
-                <span class="text-[10px] font-black text-yellow-400 uppercase">#1</span>
-                <h3 class="heading-font font-black text-sm text-white truncate" id="cand1-nome-ba">Aguardando dados</h3>
+        <div class="space-y-2.5 my-auto">
+          <div class="bg-white/[0.07] p-2.5 rounded-xl border-l-[5px] border-red-500 flex items-center justify-between">
+            <div class="truncate mr-3">
+              <div class="flex items-center space-x-2">
+                <span class="bg-yellow-500/20 text-yellow-400 border border-yellow-500/40 text-[10px] font-black px-1.5 py-0.2 rounded uppercase">1º</span>
+                <h3 class="heading-font font-black text-base lg:text-lg text-white truncate uppercase tracking-tight" id="cand1-nome-ba">Aguardando dados</h3>
               </div>
-              <p class="text-[10px] text-gray-400" id="cand1-partido-ba">Partido --</p>
+              <div class="flex items-center space-x-2 mt-1">
+                <span class="text-[11px] font-black text-white bg-red-600 px-1.5 py-0.2 rounded" id="cand1-partido-ba">--</span>
+                <span class="text-xs text-gray-300 font-semibold" id="cand1-votos-ba">0 votos</span>
+              </div>
             </div>
             <div class="text-right flex-shrink-0">
-              <span class="heading-font text-xl lg:text-2xl font-black text-white leading-none block" id="cand1-perc-ba">0,00%</span>
-              <span class="text-[10px] text-gray-400" id="cand1-votos-ba">0 votos</span>
+              <span class="heading-font text-3xl lg:text-4xl 2xl:text-5xl font-black text-white leading-none tracking-tight block" id="cand1-perc-ba">0,00%</span>
             </div>
           </div>
 
-          <div class="bg-white/5 p-2 rounded-lg border-l-4 border-gray-600 flex items-center justify-between">
-            <div class="truncate mr-2">
-              <div class="flex items-center space-x-1.5">
-                <span class="text-[10px] font-bold text-gray-400 uppercase">#2</span>
-                <h4 class="heading-font font-bold text-xs text-gray-200 truncate" id="cand2-nome-ba">Aguardando dados</h4>
+          <div class="bg-white/[0.04] p-2.5 rounded-xl border-l-[5px] border-gray-600 flex items-center justify-between">
+            <div class="truncate mr-3">
+              <div class="flex items-center space-x-2">
+                <span class="bg-gray-700 text-gray-300 text-[10px] font-black px-1.5 py-0.2 rounded uppercase">2º</span>
+                <h4 class="heading-font font-extrabold text-sm lg:text-base text-gray-200 truncate uppercase tracking-tight" id="cand2-nome-ba">Aguardando dados</h4>
               </div>
-              <p class="text-[10px] text-gray-400" id="cand2-partido-ba">Partido --</p>
+              <div class="flex items-center space-x-2 mt-1">
+                <span class="text-[11px] font-bold text-gray-200 bg-gray-700 px-1.5 py-0.2 rounded" id="cand2-partido-ba">--</span>
+                <span class="text-xs text-gray-400 font-semibold" id="cand2-votos-ba">0 votos</span>
+              </div>
             </div>
             <div class="text-right flex-shrink-0">
-              <span class="heading-font text-lg font-black text-gray-300 leading-none block" id="cand2-perc-ba">0,00%</span>
-              <span class="text-[10px] text-gray-400" id="cand2-votos-ba">0 votos</span>
+              <span class="heading-font text-2xl lg:text-3xl 2xl:text-4xl font-black text-gray-300 leading-none tracking-tight block" id="cand2-perc-ba">0,00%</span>
             </div>
           </div>
         </div>
 
-        <div class="w-full bg-gray-800 rounded-full h-1 overflow-hidden">
+        <div class="w-full bg-gray-800 rounded-full h-1.5 overflow-hidden">
           <div class="bg-red-500 h-full transition-all duration-700" id="bar-ba" style="width: 0%"></div>
         </div>
       </div>
 
       <!-- 4. RIO DE JANEIRO (RJ) -->
       <div class="state-balloon" id="card-rj">
-        <div class="flex items-center justify-between border-b border-white/10 pb-2">
-          <div class="flex items-center space-x-2">
-            <span class="heading-font bg-blue-600/30 text-blue-400 border border-blue-500/40 text-xs font-black px-2 py-0.5 rounded">RJ</span>
-            <span class="heading-font font-extrabold text-sm text-white">Rio de Janeiro</span>
+        <div class="flex items-center justify-between border-b border-white/10 pb-2.5">
+          <div class="flex items-center space-x-2.5">
+            <span class="heading-font bg-blue-600 text-white text-xs font-black px-2.5 py-1 rounded shadow">RJ</span>
+            <span class="heading-font font-black text-base text-white tracking-wide">Rio de Janeiro</span>
           </div>
-          <span class="text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded" id="pst-rj">0,00% apurado</span>
+          <span class="heading-font text-xs font-black text-emerald-400 bg-emerald-500/15 border border-emerald-500/30 px-2.5 py-1 rounded tracking-wide" id="pst-rj">0,00% apurado</span>
         </div>
 
-        <div class="space-y-1.5 my-auto">
-          <div class="bg-white/5 p-2 rounded-lg border-l-4 border-blue-500 flex items-center justify-between">
-            <div class="truncate mr-2">
-              <div class="flex items-center space-x-1.5">
-                <span class="text-[10px] font-black text-yellow-400 uppercase">#1</span>
-                <h3 class="heading-font font-black text-sm text-white truncate" id="cand1-nome-rj">Aguardando dados</h3>
+        <div class="space-y-2.5 my-auto">
+          <div class="bg-white/[0.07] p-2.5 rounded-xl border-l-[5px] border-blue-500 flex items-center justify-between">
+            <div class="truncate mr-3">
+              <div class="flex items-center space-x-2">
+                <span class="bg-yellow-500/20 text-yellow-400 border border-yellow-500/40 text-[10px] font-black px-1.5 py-0.2 rounded uppercase">1º</span>
+                <h3 class="heading-font font-black text-base lg:text-lg text-white truncate uppercase tracking-tight" id="cand1-nome-rj">Aguardando dados</h3>
               </div>
-              <p class="text-[10px] text-gray-400" id="cand1-partido-rj">Partido --</p>
+              <div class="flex items-center space-x-2 mt-1">
+                <span class="text-[11px] font-black text-white bg-blue-600 px-1.5 py-0.2 rounded" id="cand1-partido-rj">--</span>
+                <span class="text-xs text-gray-300 font-semibold" id="cand1-votos-rj">0 votos</span>
+              </div>
             </div>
             <div class="text-right flex-shrink-0">
-              <span class="heading-font text-xl lg:text-2xl font-black text-white leading-none block" id="cand1-perc-rj">0,00%</span>
-              <span class="text-[10px] text-gray-400" id="cand1-votos-rj">0 votos</span>
+              <span class="heading-font text-3xl lg:text-4xl 2xl:text-5xl font-black text-white leading-none tracking-tight block" id="cand1-perc-rj">0,00%</span>
             </div>
           </div>
 
-          <div class="bg-white/5 p-2 rounded-lg border-l-4 border-gray-600 flex items-center justify-between">
-            <div class="truncate mr-2">
-              <div class="flex items-center space-x-1.5">
-                <span class="text-[10px] font-bold text-gray-400 uppercase">#2</span>
-                <h4 class="heading-font font-bold text-xs text-gray-200 truncate" id="cand2-nome-rj">Aguardando dados</h4>
+          <div class="bg-white/[0.04] p-2.5 rounded-xl border-l-[5px] border-gray-600 flex items-center justify-between">
+            <div class="truncate mr-3">
+              <div class="flex items-center space-x-2">
+                <span class="bg-gray-700 text-gray-300 text-[10px] font-black px-1.5 py-0.2 rounded uppercase">2º</span>
+                <h4 class="heading-font font-extrabold text-sm lg:text-base text-gray-200 truncate uppercase tracking-tight" id="cand2-nome-rj">Aguardando dados</h4>
               </div>
-              <p class="text-[10px] text-gray-400" id="cand2-partido-rj">Partido --</p>
+              <div class="flex items-center space-x-2 mt-1">
+                <span class="text-[11px] font-bold text-gray-200 bg-gray-700 px-1.5 py-0.2 rounded" id="cand2-partido-rj">--</span>
+                <span class="text-xs text-gray-400 font-semibold" id="cand2-votos-rj">0 votos</span>
+              </div>
             </div>
             <div class="text-right flex-shrink-0">
-              <span class="heading-font text-lg font-black text-gray-300 leading-none block" id="cand2-perc-rj">0,00%</span>
-              <span class="text-[10px] text-gray-400" id="cand2-votos-rj">0 votos</span>
+              <span class="heading-font text-2xl lg:text-3xl 2xl:text-4xl font-black text-gray-300 leading-none tracking-tight block" id="cand2-perc-rj">0,00%</span>
             </div>
           </div>
         </div>
 
-        <div class="w-full bg-gray-800 rounded-full h-1 overflow-hidden">
+        <div class="w-full bg-gray-800 rounded-full h-1.5 overflow-hidden">
           <div class="bg-blue-500 h-full transition-all duration-700" id="bar-rj" style="width: 0%"></div>
         </div>
       </div>
 
       <!-- 5. PARANÁ (PR) -->
       <div class="state-balloon" id="card-pr">
-        <div class="flex items-center justify-between border-b border-white/10 pb-2">
-          <div class="flex items-center space-x-2">
-            <span class="heading-font bg-emerald-600/30 text-emerald-400 border border-emerald-500/40 text-xs font-black px-2 py-0.5 rounded">PR</span>
-            <span class="heading-font font-extrabold text-sm text-white">Paraná</span>
+        <div class="flex items-center justify-between border-b border-white/10 pb-2.5">
+          <div class="flex items-center space-x-2.5">
+            <span class="heading-font bg-emerald-600 text-white text-xs font-black px-2.5 py-1 rounded shadow">PR</span>
+            <span class="heading-font font-black text-base text-white tracking-wide">Paraná</span>
           </div>
-          <span class="text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded" id="pst-pr">0,00% apurado</span>
+          <span class="heading-font text-xs font-black text-emerald-400 bg-emerald-500/15 border border-emerald-500/30 px-2.5 py-1 rounded tracking-wide" id="pst-pr">0,00% apurado</span>
         </div>
 
-        <div class="space-y-1.5 my-auto">
-          <div class="bg-white/5 p-2 rounded-lg border-l-4 border-emerald-500 flex items-center justify-between">
-            <div class="truncate mr-2">
-              <div class="flex items-center space-x-1.5">
-                <span class="text-[10px] font-black text-yellow-400 uppercase">#1</span>
-                <h3 class="heading-font font-black text-sm text-white truncate" id="cand1-nome-pr">Aguardando dados</h3>
+        <div class="space-y-2.5 my-auto">
+          <div class="bg-white/[0.07] p-2.5 rounded-xl border-l-[5px] border-emerald-500 flex items-center justify-between">
+            <div class="truncate mr-3">
+              <div class="flex items-center space-x-2">
+                <span class="bg-yellow-500/20 text-yellow-400 border border-yellow-500/40 text-[10px] font-black px-1.5 py-0.2 rounded uppercase">1º</span>
+                <h3 class="heading-font font-black text-base lg:text-lg text-white truncate uppercase tracking-tight" id="cand1-nome-pr">Aguardando dados</h3>
               </div>
-              <p class="text-[10px] text-gray-400" id="cand1-partido-pr">Partido --</p>
+              <div class="flex items-center space-x-2 mt-1">
+                <span class="text-[11px] font-black text-white bg-emerald-600 px-1.5 py-0.2 rounded" id="cand1-partido-pr">--</span>
+                <span class="text-xs text-gray-300 font-semibold" id="cand1-votos-pr">0 votos</span>
+              </div>
             </div>
             <div class="text-right flex-shrink-0">
-              <span class="heading-font text-xl lg:text-2xl font-black text-white leading-none block" id="cand1-perc-pr">0,00%</span>
-              <span class="text-[10px] text-gray-400" id="cand1-votos-pr">0 votos</span>
+              <span class="heading-font text-3xl lg:text-4xl 2xl:text-5xl font-black text-white leading-none tracking-tight block" id="cand1-perc-pr">0,00%</span>
             </div>
           </div>
 
-          <div class="bg-white/5 p-2 rounded-lg border-l-4 border-gray-600 flex items-center justify-between">
-            <div class="truncate mr-2">
-              <div class="flex items-center space-x-1.5">
-                <span class="text-[10px] font-bold text-gray-400 uppercase">#2</span>
-                <h4 class="heading-font font-bold text-xs text-gray-200 truncate" id="cand2-nome-pr">Aguardando dados</h4>
+          <div class="bg-white/[0.04] p-2.5 rounded-xl border-l-[5px] border-gray-600 flex items-center justify-between">
+            <div class="truncate mr-3">
+              <div class="flex items-center space-x-2">
+                <span class="bg-gray-700 text-gray-300 text-[10px] font-black px-1.5 py-0.2 rounded uppercase">2º</span>
+                <h4 class="heading-font font-extrabold text-sm lg:text-base text-gray-200 truncate uppercase tracking-tight" id="cand2-nome-pr">Aguardando dados</h4>
               </div>
-              <p class="text-[10px] text-gray-400" id="cand2-partido-pr">Partido --</p>
+              <div class="flex items-center space-x-2 mt-1">
+                <span class="text-[11px] font-bold text-gray-200 bg-gray-700 px-1.5 py-0.2 rounded" id="cand2-partido-pr">--</span>
+                <span class="text-xs text-gray-400 font-semibold" id="cand2-votos-pr">0 votos</span>
+              </div>
             </div>
             <div class="text-right flex-shrink-0">
-              <span class="heading-font text-lg font-black text-gray-300 leading-none block" id="cand2-perc-pr">0,00%</span>
-              <span class="text-[10px] text-gray-400" id="cand2-votos-pr">0 votos</span>
+              <span class="heading-font text-2xl lg:text-3xl 2xl:text-4xl font-black text-gray-300 leading-none tracking-tight block" id="cand2-perc-pr">0,00%</span>
             </div>
           </div>
         </div>
 
-        <div class="w-full bg-gray-800 rounded-full h-1 overflow-hidden">
+        <div class="w-full bg-gray-800 rounded-full h-1.5 overflow-hidden">
           <div class="bg-emerald-500 h-full transition-all duration-700" id="bar-pr" style="width: 0%"></div>
         </div>
       </div>
 
       <!-- 6. RIO GRANDE DO SUL (RS) -->
       <div class="state-balloon" id="card-rs">
-        <div class="flex items-center justify-between border-b border-white/10 pb-2">
-          <div class="flex items-center space-x-2">
-            <span class="heading-font bg-amber-600/30 text-amber-400 border border-amber-500/40 text-xs font-black px-2 py-0.5 rounded">RS</span>
-            <span class="heading-font font-extrabold text-sm text-white">Rio Grande do Sul</span>
+        <div class="flex items-center justify-between border-b border-white/10 pb-2.5">
+          <div class="flex items-center space-x-2.5">
+            <span class="heading-font bg-amber-600 text-white text-xs font-black px-2.5 py-1 rounded shadow">RS</span>
+            <span class="heading-font font-black text-base text-white tracking-wide">Rio Grande do Sul</span>
           </div>
-          <span class="text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded" id="pst-rs">0,00% apurado</span>
+          <span class="heading-font text-xs font-black text-emerald-400 bg-emerald-500/15 border border-emerald-500/30 px-2.5 py-1 rounded tracking-wide" id="pst-rs">0,00% apurado</span>
         </div>
 
-        <div class="space-y-1.5 my-auto">
-          <div class="bg-white/5 p-2 rounded-lg border-l-4 border-amber-500 flex items-center justify-between">
-            <div class="truncate mr-2">
-              <div class="flex items-center space-x-1.5">
-                <span class="text-[10px] font-black text-yellow-400 uppercase">#1</span>
-                <h3 class="heading-font font-black text-sm text-white truncate" id="cand1-nome-rs">Aguardando dados</h3>
+        <div class="space-y-2.5 my-auto">
+          <div class="bg-white/[0.07] p-2.5 rounded-xl border-l-[5px] border-amber-500 flex items-center justify-between">
+            <div class="truncate mr-3">
+              <div class="flex items-center space-x-2">
+                <span class="bg-yellow-500/20 text-yellow-400 border border-yellow-500/40 text-[10px] font-black px-1.5 py-0.2 rounded uppercase">1º</span>
+                <h3 class="heading-font font-black text-base lg:text-lg text-white truncate uppercase tracking-tight" id="cand1-nome-rs">Aguardando dados</h3>
               </div>
-              <p class="text-[10px] text-gray-400" id="cand1-partido-rs">Partido --</p>
+              <div class="flex items-center space-x-2 mt-1">
+                <span class="text-[11px] font-black text-white bg-amber-600 px-1.5 py-0.2 rounded" id="cand1-partido-rs">--</span>
+                <span class="text-xs text-gray-300 font-semibold" id="cand1-votos-rs">0 votos</span>
+              </div>
             </div>
             <div class="text-right flex-shrink-0">
-              <span class="heading-font text-xl lg:text-2xl font-black text-white leading-none block" id="cand1-perc-rs">0,00%</span>
-              <span class="text-[10px] text-gray-400" id="cand1-votos-rs">0 votos</span>
+              <span class="heading-font text-3xl lg:text-4xl 2xl:text-5xl font-black text-white leading-none tracking-tight block" id="cand1-perc-rs">0,00%</span>
             </div>
           </div>
 
-          <div class="bg-white/5 p-2 rounded-lg border-l-4 border-gray-600 flex items-center justify-between">
-            <div class="truncate mr-2">
-              <div class="flex items-center space-x-1.5">
-                <span class="text-[10px] font-bold text-gray-400 uppercase">#2</span>
-                <h4 class="heading-font font-bold text-xs text-gray-200 truncate" id="cand2-nome-rs">Aguardando dados</h4>
+          <div class="bg-white/[0.04] p-2.5 rounded-xl border-l-[5px] border-gray-600 flex items-center justify-between">
+            <div class="truncate mr-3">
+              <div class="flex items-center space-x-2">
+                <span class="bg-gray-700 text-gray-300 text-[10px] font-black px-1.5 py-0.2 rounded uppercase">2º</span>
+                <h4 class="heading-font font-extrabold text-sm lg:text-base text-gray-200 truncate uppercase tracking-tight" id="cand2-nome-rs">Aguardando dados</h4>
               </div>
-              <p class="text-[10px] text-gray-400" id="cand2-partido-rs">Partido --</p>
+              <div class="flex items-center space-x-2 mt-1">
+                <span class="text-[11px] font-bold text-gray-200 bg-gray-700 px-1.5 py-0.2 rounded" id="cand2-partido-rs">--</span>
+                <span class="text-xs text-gray-400 font-semibold" id="cand2-votos-rs">0 votos</span>
+              </div>
             </div>
             <div class="text-right flex-shrink-0">
-              <span class="heading-font text-lg font-black text-gray-300 leading-none block" id="cand2-perc-rs">0,00%</span>
-              <span class="text-[10px] text-gray-400" id="cand2-votos-rs">0 votos</span>
+              <span class="heading-font text-2xl lg:text-3xl 2xl:text-4xl font-black text-gray-300 leading-none tracking-tight block" id="cand2-perc-rs">0,00%</span>
             </div>
           </div>
         </div>
 
-        <div class="w-full bg-gray-800 rounded-full h-1 overflow-hidden">
+        <div class="w-full bg-gray-800 rounded-full h-1.5 overflow-hidden">
           <div class="bg-amber-500 h-full transition-all duration-700" id="bar-rs" style="width: 0%"></div>
         </div>
       </div>
 
       <!-- 7. CEARÁ (CE) -->
       <div class="state-balloon" id="card-ce">
-        <div class="flex items-center justify-between border-b border-white/10 pb-2">
-          <div class="flex items-center space-x-2">
-            <span class="heading-font bg-cyan-600/30 text-cyan-400 border border-cyan-500/40 text-xs font-black px-2 py-0.5 rounded">CE</span>
-            <span class="heading-font font-extrabold text-sm text-white">Ceará</span>
+        <div class="flex items-center justify-between border-b border-white/10 pb-2.5">
+          <div class="flex items-center space-x-2.5">
+            <span class="heading-font bg-cyan-600 text-white text-xs font-black px-2.5 py-1 rounded shadow">CE</span>
+            <span class="heading-font font-black text-base text-white tracking-wide">Ceará</span>
           </div>
-          <span class="text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded" id="pst-ce">0,00% apurado</span>
+          <span class="heading-font text-xs font-black text-emerald-400 bg-emerald-500/15 border border-emerald-500/30 px-2.5 py-1 rounded tracking-wide" id="pst-ce">0,00% apurado</span>
         </div>
 
-        <div class="space-y-1.5 my-auto">
-          <div class="bg-white/5 p-2 rounded-lg border-l-4 border-cyan-500 flex items-center justify-between">
-            <div class="truncate mr-2">
-              <div class="flex items-center space-x-1.5">
-                <span class="text-[10px] font-black text-yellow-400 uppercase">#1</span>
-                <h3 class="heading-font font-black text-sm text-white truncate" id="cand1-nome-ce">Aguardando dados</h3>
+        <div class="space-y-2.5 my-auto">
+          <div class="bg-white/[0.07] p-2.5 rounded-xl border-l-[5px] border-cyan-500 flex items-center justify-between">
+            <div class="truncate mr-3">
+              <div class="flex items-center space-x-2">
+                <span class="bg-yellow-500/20 text-yellow-400 border border-yellow-500/40 text-[10px] font-black px-1.5 py-0.2 rounded uppercase">1º</span>
+                <h3 class="heading-font font-black text-base lg:text-lg text-white truncate uppercase tracking-tight" id="cand1-nome-ce">Aguardando dados</h3>
               </div>
-              <p class="text-[10px] text-gray-400" id="cand1-partido-ce">Partido --</p>
+              <div class="flex items-center space-x-2 mt-1">
+                <span class="text-[11px] font-black text-white bg-cyan-600 px-1.5 py-0.2 rounded" id="cand1-partido-ce">--</span>
+                <span class="text-xs text-gray-300 font-semibold" id="cand1-votos-ce">0 votos</span>
+              </div>
             </div>
             <div class="text-right flex-shrink-0">
-              <span class="heading-font text-xl lg:text-2xl font-black text-white leading-none block" id="cand1-perc-ce">0,00%</span>
-              <span class="text-[10px] text-gray-400" id="cand1-votos-ce">0 votos</span>
+              <span class="heading-font text-3xl lg:text-4xl 2xl:text-5xl font-black text-white leading-none tracking-tight block" id="cand1-perc-ce">0,00%</span>
             </div>
           </div>
 
-          <div class="bg-white/5 p-2 rounded-lg border-l-4 border-gray-600 flex items-center justify-between">
-            <div class="truncate mr-2">
-              <div class="flex items-center space-x-1.5">
-                <span class="text-[10px] font-bold text-gray-400 uppercase">#2</span>
-                <h4 class="heading-font font-bold text-xs text-gray-200 truncate" id="cand2-nome-ce">Aguardando dados</h4>
+          <div class="bg-white/[0.04] p-2.5 rounded-xl border-l-[5px] border-gray-600 flex items-center justify-between">
+            <div class="truncate mr-3">
+              <div class="flex items-center space-x-2">
+                <span class="bg-gray-700 text-gray-300 text-[10px] font-black px-1.5 py-0.2 rounded uppercase">2º</span>
+                <h4 class="heading-font font-extrabold text-sm lg:text-base text-gray-200 truncate uppercase tracking-tight" id="cand2-nome-ce">Aguardando dados</h4>
               </div>
-              <p class="text-[10px] text-gray-400" id="cand2-partido-ce">Partido --</p>
+              <div class="flex items-center space-x-2 mt-1">
+                <span class="text-[11px] font-bold text-gray-200 bg-gray-700 px-1.5 py-0.2 rounded" id="cand2-partido-ce">--</span>
+                <span class="text-xs text-gray-400 font-semibold" id="cand2-votos-ce">0 votos</span>
+              </div>
             </div>
             <div class="text-right flex-shrink-0">
-              <span class="heading-font text-lg font-black text-gray-300 leading-none block" id="cand2-perc-ce">0,00%</span>
-              <span class="text-[10px] text-gray-400" id="cand2-votos-ce">0 votos</span>
+              <span class="heading-font text-2xl lg:text-3xl 2xl:text-4xl font-black text-gray-300 leading-none tracking-tight block" id="cand2-perc-ce">0,00%</span>
             </div>
           </div>
         </div>
 
-        <div class="w-full bg-gray-800 rounded-full h-1 overflow-hidden">
+        <div class="w-full bg-gray-800 rounded-full h-1.5 overflow-hidden">
           <div class="bg-cyan-500 h-full transition-all duration-700" id="bar-ce" style="width: 0%"></div>
         </div>
       </div>
 
       <!-- 8. PERNAMBUCO (PE) -->
       <div class="state-balloon" id="card-pe">
-        <div class="flex items-center justify-between border-b border-white/10 pb-2">
-          <div class="flex items-center space-x-2">
-            <span class="heading-font bg-purple-600/30 text-purple-400 border border-purple-500/40 text-xs font-black px-2 py-0.5 rounded">PE</span>
-            <span class="heading-font font-extrabold text-sm text-white">Pernambuco</span>
+        <div class="flex items-center justify-between border-b border-white/10 pb-2.5">
+          <div class="flex items-center space-x-2.5">
+            <span class="heading-font bg-purple-600 text-white text-xs font-black px-2.5 py-1 rounded shadow">PE</span>
+            <span class="heading-font font-black text-base text-white tracking-wide">Pernambuco</span>
           </div>
-          <span class="text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded" id="pst-pe">0,00% apurado</span>
+          <span class="heading-font text-xs font-black text-emerald-400 bg-emerald-500/15 border border-emerald-500/30 px-2.5 py-1 rounded tracking-wide" id="pst-pe">0,00% apurado</span>
         </div>
 
-        <div class="space-y-1.5 my-auto">
-          <div class="bg-white/5 p-2 rounded-lg border-l-4 border-purple-500 flex items-center justify-between">
-            <div class="truncate mr-2">
-              <div class="flex items-center space-x-1.5">
-                <span class="text-[10px] font-black text-yellow-400 uppercase">#1</span>
-                <h3 class="heading-font font-black text-sm text-white truncate" id="cand1-nome-pe">Aguardando dados</h3>
+        <div class="space-y-2.5 my-auto">
+          <div class="bg-white/[0.07] p-2.5 rounded-xl border-l-[5px] border-purple-500 flex items-center justify-between">
+            <div class="truncate mr-3">
+              <div class="flex items-center space-x-2">
+                <span class="bg-yellow-500/20 text-yellow-400 border border-yellow-500/40 text-[10px] font-black px-1.5 py-0.2 rounded uppercase">1º</span>
+                <h3 class="heading-font font-black text-base lg:text-lg text-white truncate uppercase tracking-tight" id="cand1-nome-pe">Aguardando dados</h3>
               </div>
-              <p class="text-[10px] text-gray-400" id="cand1-partido-pe">Partido --</p>
+              <div class="flex items-center space-x-2 mt-1">
+                <span class="text-[11px] font-black text-white bg-purple-600 px-1.5 py-0.2 rounded" id="cand1-partido-pe">--</span>
+                <span class="text-xs text-gray-300 font-semibold" id="cand1-votos-pe">0 votos</span>
+              </div>
             </div>
             <div class="text-right flex-shrink-0">
-              <span class="heading-font text-xl lg:text-2xl font-black text-white leading-none block" id="cand1-perc-pe">0,00%</span>
-              <span class="text-[10px] text-gray-400" id="cand1-votos-pe">0 votos</span>
+              <span class="heading-font text-3xl lg:text-4xl 2xl:text-5xl font-black text-white leading-none tracking-tight block" id="cand1-perc-pe">0,00%</span>
             </div>
           </div>
 
-          <div class="bg-white/5 p-2 rounded-lg border-l-4 border-gray-600 flex items-center justify-between">
-            <div class="truncate mr-2">
-              <div class="flex items-center space-x-1.5">
-                <span class="text-[10px] font-bold text-gray-400 uppercase">#2</span>
-                <h4 class="heading-font font-bold text-xs text-gray-200 truncate" id="cand2-nome-pe">Aguardando dados</h4>
+          <div class="bg-white/[0.04] p-2.5 rounded-xl border-l-[5px] border-gray-600 flex items-center justify-between">
+            <div class="truncate mr-3">
+              <div class="flex items-center space-x-2">
+                <span class="bg-gray-700 text-gray-300 text-[10px] font-black px-1.5 py-0.2 rounded uppercase">2º</span>
+                <h4 class="heading-font font-extrabold text-sm lg:text-base text-gray-200 truncate uppercase tracking-tight" id="cand2-nome-pe">Aguardando dados</h4>
               </div>
-              <p class="text-[10px] text-gray-400" id="cand2-partido-pe">Partido --</p>
+              <div class="flex items-center space-x-2 mt-1">
+                <span class="text-[11px] font-bold text-gray-200 bg-gray-700 px-1.5 py-0.2 rounded" id="cand2-partido-pe">--</span>
+                <span class="text-xs text-gray-400 font-semibold" id="cand2-votos-pe">0 votos</span>
+              </div>
             </div>
             <div class="text-right flex-shrink-0">
-              <span class="heading-font text-lg font-black text-gray-300 leading-none block" id="cand2-perc-pe">0,00%</span>
-              <span class="text-[10px] text-gray-400" id="cand2-votos-pe">0 votos</span>
+              <span class="heading-font text-2xl lg:text-3xl 2xl:text-4xl font-black text-gray-300 leading-none tracking-tight block" id="cand2-perc-pe">0,00%</span>
             </div>
           </div>
         </div>
 
-        <div class="w-full bg-gray-800 rounded-full h-1 overflow-hidden">
+        <div class="w-full bg-gray-800 rounded-full h-1.5 overflow-hidden">
           <div class="bg-purple-500 h-full transition-all duration-700" id="bar-pe" style="width: 0%"></div>
         </div>
       </div>
@@ -530,11 +561,11 @@
         baloes.forEach(b => {
           const uf = b.uf.toLowerCase();
 
-          // Percentual apurado
+          // Percentual de urnas apuradas
           const elPst = document.getElementById(`pst-${uf}`);
           if (elPst) elPst.innerText = `${b.pst}% apurado`;
 
-          // Mini barra de progresso
+          // Barra de progresso do estado
           const elBar = document.getElementById(`bar-${uf}`);
           if (elBar) {
             const numPst = parseFloat((b.pst || '0').replace(',', '.'));
@@ -549,7 +580,7 @@
 
           if (elC1Nome && b.cand1) {
             elC1Nome.innerText = b.cand1.nomeUrna;
-            elC1Part.innerText = `Partido: ${b.cand1.partido}`;
+            elC1Part.innerText = b.cand1.partido;
             elC1Perc.innerText = `${b.cand1.pvap}%`;
             elC1Vots.innerText = `${parseInt(b.cand1.vap || 0).toLocaleString('pt-BR')} votos`;
           }
@@ -562,7 +593,7 @@
 
           if (elC2Nome && b.cand2) {
             elC2Nome.innerText = b.cand2.nomeUrna;
-            elC2Part.innerText = `Partido: ${b.cand2.partido}`;
+            elC2Part.innerText = b.cand2.partido;
             elC2Perc.innerText = `${b.cand2.pvap}%`;
             elC2Vots.innerText = `${parseInt(b.cand2.vap || 0).toLocaleString('pt-BR')} votos`;
           }
@@ -575,7 +606,7 @@
       }
     }
 
-    // Tela cheia
+    // Controle de tela cheia
     const btnFull = document.getElementById('btn-fullscreen');
     if (btnFull) {
       btnFull.addEventListener('click', () => {
@@ -594,7 +625,6 @@
 
     window.addEventListener('DOMContentLoaded', () => {
       syncGovernadoresData();
-      // Atualização contínua a cada 15 segundos
       setInterval(syncGovernadoresData, 15000);
     });
   </script>
