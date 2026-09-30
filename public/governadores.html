@@ -32,7 +32,6 @@
       font-family: 'Montserrat', sans-serif;
     }
 
-    /* Container de tela cheia 16:9 sem scrollbars */
     .slide-stage {
       width: 100vw;
       height: 100vh;
@@ -44,7 +43,6 @@
       position: relative;
     }
 
-    /* Balão individual do estado */
     .state-balloon {
       background: rgba(15, 23, 42, 0.90);
       border: 1.5px solid rgba(255, 255, 255, 0.14);
@@ -65,7 +63,6 @@
       transform: translateY(-2px);
     }
 
-    /* Efeito de brilho pulsante do Ao Vivo */
     .pulse-dot {
       animation: pulseAnimation 1.6s cubic-bezier(0.4, 0, 0.6, 1) infinite;
     }
@@ -90,7 +87,6 @@
     <!-- Header do Slide -->
     <header class="flex items-center justify-between h-[6vh] min-h-[46px] border-b border-white/10 pb-2 px-1">
       
-      <!-- Lado Esquerdo: Identificação Oficial -->
       <div class="flex items-center space-x-3">
         <div class="bg-blue-600 text-white w-10 h-10 rounded-xl flex items-center justify-center font-black text-base shadow-md">
           <i class="fa-solid fa-landmark"></i>
@@ -107,15 +103,15 @@
         </div>
       </div>
 
-      <!-- Centro: Horário Oficial do TSE -->
+      <!-- Relógio Central -->
       <div class="text-center">
         <div class="flex items-baseline justify-center space-x-2">
-          <span class="text-xs text-gray-400 uppercase font-bold tracking-wider">Atualização TSE:</span>
+          <span class="text-xs text-gray-400 uppercase font-bold tracking-wider">Brasília:</span>
           <span id="label-hora" class="heading-font text-2xl lg:text-4xl font-black text-white leading-none">--:--</span>
         </div>
+        <div class="text-[10px] text-gray-400 mt-0.5" id="label-sub-tse-gov">Lote TSE: --:--</div>
       </div>
 
-      <!-- Lado Direito: Navegação e Controles (ocultados automaticamente no OBS com ?obs=true) -->
       <div id="painel-controles" class="flex items-center space-x-2.5 screen-control-btn">
         <a href="/" class="bg-gray-800 hover:bg-gray-700 text-gray-200 text-xs font-bold py-2 px-3.5 rounded-lg border border-gray-700 transition flex items-center gap-1.5 shadow">
           <i class="fa-solid fa-user-tie text-blue-400"></i>
@@ -124,7 +120,7 @@
 
         <a href="/detalhes.html" class="bg-gray-800 hover:bg-gray-700 text-gray-200 text-xs font-bold py-2 px-3.5 rounded-lg border border-gray-700 transition flex items-center gap-1.5 shadow">
           <i class="fa-solid fa-chart-line text-emerald-400"></i>
-          <span>Painel Detalhado</span>
+          <span>Painel</span>
         </a>
 
         <button id="btn-fullscreen" class="bg-black/50 hover:bg-black/80 text-white p-2.5 rounded-lg border border-white/20 transition">
@@ -137,10 +133,10 @@
 
     </header>
 
-    <!-- Grid dos 8 Balões de Estados (4 colunas x 2 linhas) -->
+    <!-- Grid dos 8 Balões -->
     <main class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-4.5 h-[89vh] py-1.5">
       
-      <!-- 1. SÃO PAULO (SP) -->
+      <!-- 1. SP -->
       <div class="state-balloon" id="card-sp">
         <div class="flex items-center justify-between border-b border-white/10 pb-2.5">
           <div class="flex items-center space-x-2.5">
@@ -149,9 +145,7 @@
           </div>
           <span class="heading-font text-xs font-black text-emerald-400 bg-emerald-500/15 border border-emerald-500/30 px-2.5 py-1 rounded tracking-wide" id="pst-sp">0,00% apurado</span>
         </div>
-
         <div class="space-y-2.5 my-auto">
-          <!-- 1º Colocado (Líder) -->
           <div class="bg-white/[0.07] p-2.5 rounded-xl border-l-[5px] border-blue-500 flex items-center justify-between">
             <div class="truncate mr-3">
               <div class="flex items-center space-x-2">
@@ -167,8 +161,6 @@
               <span class="heading-font text-3xl lg:text-4xl 2xl:text-5xl font-black text-white leading-none tracking-tight block" id="cand1-perc-sp">0,00%</span>
             </div>
           </div>
-
-          <!-- 2º Colocado -->
           <div class="bg-white/[0.04] p-2.5 rounded-xl border-l-[5px] border-gray-600 flex items-center justify-between">
             <div class="truncate mr-3">
               <div class="flex items-center space-x-2">
@@ -185,13 +177,12 @@
             </div>
           </div>
         </div>
-
         <div class="w-full bg-gray-800 rounded-full h-1.5 overflow-hidden">
           <div class="bg-blue-500 h-full transition-all duration-700" id="bar-sp" style="width: 0%"></div>
         </div>
       </div>
 
-      <!-- 2. MINAS GERAIS (MG) -->
+      <!-- 2. MG -->
       <div class="state-balloon" id="card-mg">
         <div class="flex items-center justify-between border-b border-white/10 pb-2.5">
           <div class="flex items-center space-x-2.5">
@@ -200,7 +191,6 @@
           </div>
           <span class="heading-font text-xs font-black text-emerald-400 bg-emerald-500/15 border border-emerald-500/30 px-2.5 py-1 rounded tracking-wide" id="pst-mg">0,00% apurado</span>
         </div>
-
         <div class="space-y-2.5 my-auto">
           <div class="bg-white/[0.07] p-2.5 rounded-xl border-l-[5px] border-red-500 flex items-center justify-between">
             <div class="truncate mr-3">
@@ -217,7 +207,6 @@
               <span class="heading-font text-3xl lg:text-4xl 2xl:text-5xl font-black text-white leading-none tracking-tight block" id="cand1-perc-mg">0,00%</span>
             </div>
           </div>
-
           <div class="bg-white/[0.04] p-2.5 rounded-xl border-l-[5px] border-gray-600 flex items-center justify-between">
             <div class="truncate mr-3">
               <div class="flex items-center space-x-2">
@@ -234,13 +223,12 @@
             </div>
           </div>
         </div>
-
         <div class="w-full bg-gray-800 rounded-full h-1.5 overflow-hidden">
           <div class="bg-red-500 h-full transition-all duration-700" id="bar-mg" style="width: 0%"></div>
         </div>
       </div>
 
-      <!-- 3. BAHIA (BA) -->
+      <!-- 3. BA -->
       <div class="state-balloon" id="card-ba">
         <div class="flex items-center justify-between border-b border-white/10 pb-2.5">
           <div class="flex items-center space-x-2.5">
@@ -249,7 +237,6 @@
           </div>
           <span class="heading-font text-xs font-black text-emerald-400 bg-emerald-500/15 border border-emerald-500/30 px-2.5 py-1 rounded tracking-wide" id="pst-ba">0,00% apurado</span>
         </div>
-
         <div class="space-y-2.5 my-auto">
           <div class="bg-white/[0.07] p-2.5 rounded-xl border-l-[5px] border-red-500 flex items-center justify-between">
             <div class="truncate mr-3">
@@ -266,7 +253,6 @@
               <span class="heading-font text-3xl lg:text-4xl 2xl:text-5xl font-black text-white leading-none tracking-tight block" id="cand1-perc-ba">0,00%</span>
             </div>
           </div>
-
           <div class="bg-white/[0.04] p-2.5 rounded-xl border-l-[5px] border-gray-600 flex items-center justify-between">
             <div class="truncate mr-3">
               <div class="flex items-center space-x-2">
@@ -283,13 +269,12 @@
             </div>
           </div>
         </div>
-
         <div class="w-full bg-gray-800 rounded-full h-1.5 overflow-hidden">
           <div class="bg-red-500 h-full transition-all duration-700" id="bar-ba" style="width: 0%"></div>
         </div>
       </div>
 
-      <!-- 4. RIO DE JANEIRO (RJ) -->
+      <!-- 4. RJ -->
       <div class="state-balloon" id="card-rj">
         <div class="flex items-center justify-between border-b border-white/10 pb-2.5">
           <div class="flex items-center space-x-2.5">
@@ -298,7 +283,6 @@
           </div>
           <span class="heading-font text-xs font-black text-emerald-400 bg-emerald-500/15 border border-emerald-500/30 px-2.5 py-1 rounded tracking-wide" id="pst-rj">0,00% apurado</span>
         </div>
-
         <div class="space-y-2.5 my-auto">
           <div class="bg-white/[0.07] p-2.5 rounded-xl border-l-[5px] border-blue-500 flex items-center justify-between">
             <div class="truncate mr-3">
@@ -315,7 +299,6 @@
               <span class="heading-font text-3xl lg:text-4xl 2xl:text-5xl font-black text-white leading-none tracking-tight block" id="cand1-perc-rj">0,00%</span>
             </div>
           </div>
-
           <div class="bg-white/[0.04] p-2.5 rounded-xl border-l-[5px] border-gray-600 flex items-center justify-between">
             <div class="truncate mr-3">
               <div class="flex items-center space-x-2">
@@ -332,13 +315,12 @@
             </div>
           </div>
         </div>
-
         <div class="w-full bg-gray-800 rounded-full h-1.5 overflow-hidden">
           <div class="bg-blue-500 h-full transition-all duration-700" id="bar-rj" style="width: 0%"></div>
         </div>
       </div>
 
-      <!-- 5. PARANÁ (PR) -->
+      <!-- 5. PR -->
       <div class="state-balloon" id="card-pr">
         <div class="flex items-center justify-between border-b border-white/10 pb-2.5">
           <div class="flex items-center space-x-2.5">
@@ -347,7 +329,6 @@
           </div>
           <span class="heading-font text-xs font-black text-emerald-400 bg-emerald-500/15 border border-emerald-500/30 px-2.5 py-1 rounded tracking-wide" id="pst-pr">0,00% apurado</span>
         </div>
-
         <div class="space-y-2.5 my-auto">
           <div class="bg-white/[0.07] p-2.5 rounded-xl border-l-[5px] border-emerald-500 flex items-center justify-between">
             <div class="truncate mr-3">
@@ -364,7 +345,6 @@
               <span class="heading-font text-3xl lg:text-4xl 2xl:text-5xl font-black text-white leading-none tracking-tight block" id="cand1-perc-pr">0,00%</span>
             </div>
           </div>
-
           <div class="bg-white/[0.04] p-2.5 rounded-xl border-l-[5px] border-gray-600 flex items-center justify-between">
             <div class="truncate mr-3">
               <div class="flex items-center space-x-2">
@@ -381,13 +361,12 @@
             </div>
           </div>
         </div>
-
         <div class="w-full bg-gray-800 rounded-full h-1.5 overflow-hidden">
           <div class="bg-emerald-500 h-full transition-all duration-700" id="bar-pr" style="width: 0%"></div>
         </div>
       </div>
 
-      <!-- 6. RIO GRANDE DO SUL (RS) -->
+      <!-- 6. RS -->
       <div class="state-balloon" id="card-rs">
         <div class="flex items-center justify-between border-b border-white/10 pb-2.5">
           <div class="flex items-center space-x-2.5">
@@ -396,7 +375,6 @@
           </div>
           <span class="heading-font text-xs font-black text-emerald-400 bg-emerald-500/15 border border-emerald-500/30 px-2.5 py-1 rounded tracking-wide" id="pst-rs">0,00% apurado</span>
         </div>
-
         <div class="space-y-2.5 my-auto">
           <div class="bg-white/[0.07] p-2.5 rounded-xl border-l-[5px] border-amber-500 flex items-center justify-between">
             <div class="truncate mr-3">
@@ -413,7 +391,6 @@
               <span class="heading-font text-3xl lg:text-4xl 2xl:text-5xl font-black text-white leading-none tracking-tight block" id="cand1-perc-rs">0,00%</span>
             </div>
           </div>
-
           <div class="bg-white/[0.04] p-2.5 rounded-xl border-l-[5px] border-gray-600 flex items-center justify-between">
             <div class="truncate mr-3">
               <div class="flex items-center space-x-2">
@@ -430,13 +407,12 @@
             </div>
           </div>
         </div>
-
         <div class="w-full bg-gray-800 rounded-full h-1.5 overflow-hidden">
           <div class="bg-amber-500 h-full transition-all duration-700" id="bar-rs" style="width: 0%"></div>
         </div>
       </div>
 
-      <!-- 7. CEARÁ (CE) -->
+      <!-- 7. CE -->
       <div class="state-balloon" id="card-ce">
         <div class="flex items-center justify-between border-b border-white/10 pb-2.5">
           <div class="flex items-center space-x-2.5">
@@ -445,7 +421,6 @@
           </div>
           <span class="heading-font text-xs font-black text-emerald-400 bg-emerald-500/15 border border-emerald-500/30 px-2.5 py-1 rounded tracking-wide" id="pst-ce">0,00% apurado</span>
         </div>
-
         <div class="space-y-2.5 my-auto">
           <div class="bg-white/[0.07] p-2.5 rounded-xl border-l-[5px] border-cyan-500 flex items-center justify-between">
             <div class="truncate mr-3">
@@ -462,7 +437,6 @@
               <span class="heading-font text-3xl lg:text-4xl 2xl:text-5xl font-black text-white leading-none tracking-tight block" id="cand1-perc-ce">0,00%</span>
             </div>
           </div>
-
           <div class="bg-white/[0.04] p-2.5 rounded-xl border-l-[5px] border-gray-600 flex items-center justify-between">
             <div class="truncate mr-3">
               <div class="flex items-center space-x-2">
@@ -479,13 +453,12 @@
             </div>
           </div>
         </div>
-
         <div class="w-full bg-gray-800 rounded-full h-1.5 overflow-hidden">
           <div class="bg-cyan-500 h-full transition-all duration-700" id="bar-ce" style="width: 0%"></div>
         </div>
       </div>
 
-      <!-- 8. PERNAMBUCO (PE) -->
+      <!-- 8. PE -->
       <div class="state-balloon" id="card-pe">
         <div class="flex items-center justify-between border-b border-white/10 pb-2.5">
           <div class="flex items-center space-x-2.5">
@@ -494,7 +467,6 @@
           </div>
           <span class="heading-font text-xs font-black text-emerald-400 bg-emerald-500/15 border border-emerald-500/30 px-2.5 py-1 rounded tracking-wide" id="pst-pe">0,00% apurado</span>
         </div>
-
         <div class="space-y-2.5 my-auto">
           <div class="bg-white/[0.07] p-2.5 rounded-xl border-l-[5px] border-purple-500 flex items-center justify-between">
             <div class="truncate mr-3">
@@ -511,7 +483,6 @@
               <span class="heading-font text-3xl lg:text-4xl 2xl:text-5xl font-black text-white leading-none tracking-tight block" id="cand1-perc-pe">0,00%</span>
             </div>
           </div>
-
           <div class="bg-white/[0.04] p-2.5 rounded-xl border-l-[5px] border-gray-600 flex items-center justify-between">
             <div class="truncate mr-3">
               <div class="flex items-center space-x-2">
@@ -528,7 +499,6 @@
             </div>
           </div>
         </div>
-
         <div class="w-full bg-gray-800 rounded-full h-1.5 overflow-hidden">
           <div class="bg-purple-500 h-full transition-all duration-700" id="bar-pe" style="width: 0%"></div>
         </div>
@@ -539,7 +509,20 @@
   </div>
 
   <script>
-    // Suporte ao OBS Studio (?obs=true)
+    // Relógio ao Vivo Contínuo de Brasília (Avança a cada segundo)
+    function tickLiveClock() {
+      const now = new Date();
+      const horaStr = now.toLocaleTimeString('pt-BR', {
+        timeZone: 'America/Sao_Paulo',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+      const elHora = document.getElementById('label-hora');
+      if (elHora) elHora.innerText = horaStr;
+    }
+    setInterval(tickLiveClock, 1000);
+    tickLiveClock();
+
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('obs') === 'true' || urlParams.get('clean') === 'true') {
       const controles = document.getElementById('painel-controles');
@@ -554,25 +537,24 @@
         const res = await fetch('/api/governadores');
         const data = await res.json();
 
-        // Atualização do horário oficial do TSE
-        document.getElementById('label-hora').innerText = data.hora || "--:--";
+        const subTse = document.getElementById('label-sub-tse-gov');
+        if (subTse && data.hora) {
+          subTse.innerText = `Lote TSE: ${data.hora} ${data.dataGeracao ? `(${data.dataGeracao})` : ''}`;
+        }
 
         const baloes = data.baloes || [];
         baloes.forEach(b => {
           const uf = b.uf.toLowerCase();
 
-          // Percentual de urnas apuradas
           const elPst = document.getElementById(`pst-${uf}`);
           if (elPst) elPst.innerText = `${b.pst}% apurado`;
 
-          // Barra de progresso do estado
           const elBar = document.getElementById(`bar-${uf}`);
           if (elBar) {
             const numPst = parseFloat((b.pst || '0').replace(',', '.'));
             elBar.style.width = `${Math.min(numPst, 100)}%`;
           }
 
-          // 1º Colocado
           const elC1Nome = document.getElementById(`cand1-nome-${uf}`);
           const elC1Part = document.getElementById(`cand1-partido-${uf}`);
           const elC1Perc = document.getElementById(`cand1-perc-${uf}`);
@@ -585,7 +567,6 @@
             elC1Vots.innerText = `${parseInt(b.cand1.vap || 0).toLocaleString('pt-BR')} votos`;
           }
 
-          // 2º Colocado
           const elC2Nome = document.getElementById(`cand2-nome-${uf}`);
           const elC2Part = document.getElementById(`cand2-partido-${uf}`);
           const elC2Perc = document.getElementById(`cand2-perc-${uf}`);
@@ -606,7 +587,6 @@
       }
     }
 
-    // Controle de tela cheia
     const btnFull = document.getElementById('btn-fullscreen');
     if (btnFull) {
       btnFull.addEventListener('click', () => {
