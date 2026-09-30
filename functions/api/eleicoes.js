@@ -1,4 +1,4 @@
-// functions/api/eleicoes.js - API Oficial Completa para Slide e Painel Detalhado
+// functions/api/eleicoes.js - Backend Refinado Eleições 2026
 const TSE_BASE_URL = 'https://resultados.tse.jus.br/oficial';
 const ELEICAO_ID = '6257';
 const ELEICAO_CODE = 'e006257';
@@ -35,40 +35,20 @@ function extractCandidatesUniversal(tseData) {
     if (cargo.agr && Array.isArray(cargo.agr)) {
       for (const agr of cargo.agr) {
         const com = agr.com || '';
-        const coligacaoNome = agr.nm || '';
         if (agr.par && Array.isArray(agr.par)) {
           for (const par of agr.par) {
             const sg = par.sg || '';
-            const partidoNome = par.nm || '';
             if (par.cand && Array.isArray(par.cand)) {
               for (const c of par.cand) {
-                const vices = [];
-                if (c.vs && Array.isArray(c.vs)) {
-                  for (const v of c.vs) {
-                    vices.push({
-                      nomeCivil: v.nm || '',
-                      nomeUrna: v.nmu || v.nm || '',
-                      partido: v.sgp || ''
-                    });
-                  }
-                }
-                const viceInfo = vices[0] || { nomeCivil: 'Não informado', nomeUrna: 'Não informado', partido: '' };
-
                 candidates.push({
                   n: String(c.n || '').trim(),
                   nm: c.nm || '',
                   nmu: c.nmu || c.nm || '',
                   sg: sg,
-                  partidoNome: partidoNome,
                   cc: com,
-                  coligacaoNome: coligacaoNome,
-                  dtNasc: c.dt || '',
-                  seq: c.seq || '',
-                  sqcand: c.sqcand || '',
                   vap: String(c.vap || '0'),
                   pvap: String(c.pvap || '0,00'),
-                  st: c.st || '',
-                  vice: viceInfo
+                  st: c.st || ''
                 });
               }
             }
@@ -83,16 +63,10 @@ function extractCandidatesUniversal(tseData) {
         nm: c.nm || '',
         nmu: c.nmu || c.nm || '',
         sg: (c.cc || '').split(' ')[0] || '',
-        partidoNome: '',
         cc: c.cc || '',
-        coligacaoNome: '',
-        dtNasc: '',
-        seq: '',
-        sqcand: '',
         vap: String(c.vap || '0'),
         pvap: String(c.pvap || '0,00'),
-        st: c.st || '',
-        vice: { nomeCivil: 'Não informado', nomeUrna: 'Não informado', partido: '' }
+        st: c.st || ''
       });
     }
   }
@@ -131,7 +105,7 @@ async function fetchTseScope(scope) {
   try {
     const res = await fetch(url, {
       headers: {
-        'User-Agent': 'CentralApuracao2026/EdgeDetailed',
+        'User-Agent': 'CentralApuracao2026/CloudflareEdge',
         'Accept': 'application/json, text/plain, */*'
       },
       cf: {
@@ -153,88 +127,14 @@ export async function onRequestGet() {
     const rawCandidates = extractCandidatesUniversal(brasilData);
 
     const secoes = brasilData && typeof brasilData.s === 'object' ? brasilData.s : {};
-    const eleitorado = brasilData && typeof brasilData.e === 'object' ? brasilData.e : {};
-    const votos = brasilData && typeof brasilData.v === 'object' ? brasilData.v : {};
-
     const pst = secoes.pst || (brasilData && brasilData.pst) || '0,00';
     const totalSecoes = secoes.ts || (brasilData && brasilData.s) || '499248';
     const secoesTotalizadas = secoes.st || (brasilData && brasilData.st) || '0';
-    const secoesNaoTotalizadas = secoes.snt || '499248';
 
-    const totalEleitores = eleitorado.te || '158745502';
-    const comparecimento = eleitorado.c || '0';
-    const comparecimentoPerc = eleitorado.pc || '0,00';
-    const abstencao = eleitorado.a || '0';
-    const abstencaoPerc = eleitorado.pa || '0,00';
+    const horaLoteTse = (brasilData && brasilData.hg ? brasilData.hg.substring(0, 5) : '--:--');
+    const dataLoteTse = (brasilData && brasilData.dg ? brasilData.dg : '');
 
-    const votosValidos = votos.vvc || '0';
-    const votosValidosPerc = votos.pvvc || '0,00';
-    const votosBrancos = votos.vb || '0';
-    const votosBrancosPerc = votos.pvb || '0,00';
-    const votosNulos = votos.vn || '0';
-    const votosNulosPerc = votos.pvn || '0,00';
-    const votosTotal = votos.tv || '0';
-
-    let horaExibicao = (brasilData && brasilData.hg ? brasilData.hg.substring(0, 5) : '');
-    const dataGeracao = (brasilData && brasilData.dg ? brasilData.dg : '');
-    if (!horaExibicao) {
-      horaExibicao = new Date().toLocaleTimeString('pt-BR', {
-        timeZone: 'America/Sao_Paulo',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
-    }
-
-    if (!brasilData || rawCandidates.length === 0) {
-      const prePayload = {
-        source: "TSE_PRODUCAO_AGUARDANDO",
-        hora: horaExibicao,
-        dataGeracao: dataGeracao || new Date().toLocaleDateString('pt-BR'),
-        statusTotalizacao: "Aguardando Fechamento das Urnas (17h00)",
-        pst: "0,00",
-        secoesTotalizadas: "0",
-        totalSecoes: totalSecoes,
-        secoesNaoTotalizadas: totalSecoes,
-        totalEleitores: totalEleitores,
-        comparecimento: "0",
-        comparecimentoPerc: "0,00",
-        abstencao: "0",
-        abstencaoPerc: "0,00",
-        votosValidos: "0",
-        votosValidosPerc: "0,00",
-        votosBrancos: "0",
-        votosBrancosPerc: "0,00",
-        votosNulos: "0",
-        votosNulosPerc: "0,00",
-        votosTotal: "0",
-        candidatos: CANDIDATOS_CONFIG.map((c, idx) => ({
-          rank: idx + 1,
-          shortName: c.shortName,
-          nomeUrna: c.nome,
-          nomeCivil: c.nome,
-          partido: c.partido,
-          partidoNome: c.partido,
-          coligacao: c.partido,
-          fotoArquivo: c.fotoArquivo,
-          numero: c.numero,
-          vap: "0",
-          pvap: "0,00",
-          color: c.color,
-          st: "Aguardando início",
-          vice: { nomeCivil: "Não informado", nomeUrna: "Não informado", partido: "" }
-        })),
-        estados: {}
-      };
-
-      return new Response(JSON.stringify(prePayload), {
-        headers: {
-          'Content-Type': 'application/json',
-          'Cache-Control': 'public, max-age=15, s-maxage=15'
-        }
-      });
-    }
-
-    // Consulta paralela das 27 UFs para o mapa e tabela detalhada
+    // Consulta paralela das 27 UFs para coloração do mapa
     const ufPromises = ESTADOS.map(async (uf) => {
       const data = await fetchTseScope(uf);
       return { uf: uf.toUpperCase(), data };
@@ -246,89 +146,56 @@ export async function onRequestGet() {
     ufResponses.forEach(({ uf, data }) => {
       if (data) {
         const uCands = extractCandidatesUniversal(data);
-        const uSec = typeof data.s === 'object' ? data.s : {};
-        const uEle = typeof data.e === 'object' ? data.e : {};
-        const uVot = typeof data.v === 'object' ? data.v : {};
-
-        let leaderObj = { shortName: "---", partido: "", percentual: "0,00", vap: "0", color: "#334155" };
-        let secondObj = { shortName: "---", partido: "", percentual: "0,00", vap: "0" };
-        let sortedUfCands = [];
-
         if (uCands.length > 0) {
-          sortedUfCands = uCands.map(c => {
-            const conf = matchCandidate(c);
-            return {
-              shortName: conf.shortName,
-              nomeUrna: c.nmu,
-              partido: conf.partido,
-              numero: conf.numero,
-              vap: c.vap,
-              pvap: c.pvap,
-              color: conf.color,
-              st: c.st
-            };
-          }).sort((a, b) => parseInt(b.vap || '0', 10) - parseInt(a.vap || '0', 10));
+          uCands.sort((a, b) => parseInt(b.vap || '0', 10) - parseInt(a.vap || '0', 10));
+          const leaderRaw = uCands[0];
+          const leaderConf = matchCandidate(leaderRaw);
 
-          const lRaw = sortedUfCands[0];
-          leaderObj = {
-            shortName: lRaw.shortName,
-            partido: lRaw.partido,
-            percentual: lRaw.pvap || "0,00",
-            vap: lRaw.vap,
-            color: lRaw.color
+          const uSec = typeof data.s === 'object' ? data.s : {};
+          estadosMap[uf] = {
+            uf: uf,
+            pst: uSec.pst || data.pst || "0,00",
+            leader: {
+              shortName: leaderConf.shortName,
+              partido: leaderConf.partido,
+              percentual: leaderRaw.pvap || "0,00",
+              color: leaderConf.color
+            }
           };
-
-          if (sortedUfCands.length > 1) {
-            const sRaw = sortedUfCands[1];
-            secondObj = {
-              shortName: sRaw.shortName,
-              partido: sRaw.partido,
-              percentual: sRaw.pvap || "0,00",
-              vap: sRaw.vap
-            };
-          }
         }
-
-        estadosMap[uf] = {
-          uf: uf,
-          pst: uSec.pst || data.pst || "0,00",
-          secoesTotalizadas: uSec.st || "0",
-          totalSecoes: uSec.ts || "0",
-          eleitorado: uEle.te || "0",
-          comparecimento: uEle.c || "0",
-          abstencao: uEle.a || "0",
-          votosValidos: uVot.vvc || "0",
-          votosBrancos: uVot.vb || "0",
-          votosNulos: uVot.vn || "0",
-          leader: leaderObj,
-          second: secondObj,
-          candidatos: sortedUfCands
-        };
       }
     });
 
-    let candidatosProcessados = rawCandidates.map(tseCand => {
-      const conf = matchCandidate(tseCand);
-      return {
-        shortName: conf.shortName,
-        nomeUrna: tseCand.nmu,
-        nomeCivil: tseCand.nm,
-        partido: conf.partido,
-        partidoNome: tseCand.partidoNome,
-        coligacao: tseCand.cc,
-        coligacaoNome: tseCand.coligacaoNome,
-        dtNasc: tseCand.dtNasc,
-        sqcand: tseCand.sqcand,
-        fotoArquivo: conf.fotoArquivo,
-        numero: conf.numero,
-        vap: tseCand.vap || '0',
-        pvap: tseCand.pvap || '0,00',
-        color: conf.color,
-        st: tseCand.st || 'Em apuração',
-        vice: tseCand.vice
-      };
-    });
+    let candidatosProcessados = [];
+    if (rawCandidates.length > 0) {
+      candidatosProcessados = rawCandidates.map(tseCand => {
+        const conf = matchCandidate(tseCand);
+        return {
+          shortName: conf.shortName,
+          nome: conf.nome,
+          partido: conf.partido,
+          fotoArquivo: conf.fotoArquivo,
+          vap: tseCand.vap || '0',
+          pvap: tseCand.pvap || '0,00',
+          color: conf.color,
+          st: tseCand.st || 'Em apuração'
+        };
+      });
+    } else {
+      candidatosProcessados = CANDIDATOS_CONFIG.map(c => ({
+        shortName: c.shortName,
+        nome: c.nome,
+        partido: c.partido,
+        fotoArquivo: c.fotoArquivo,
+        vap: "0",
+        pvap: "0,00",
+        color: c.color,
+        st: "Aguardando início"
+      }));
+    }
 
+    // Ordenação decrescente:
+    // Se ainda houver 0 votos em tudo, mantém a ordem oficial do slide de TV (Lula na esquerda, Flávio na direita)
     const algumVoto = candidatosProcessados.some(c => parseInt(c.vap, 10) > 0);
     if (algumVoto) {
       candidatosProcessados.sort((a, b) => parseInt(b.vap, 10) - parseInt(a.vap, 10));
@@ -341,36 +208,13 @@ export async function onRequestGet() {
       });
     }
 
-    candidatosProcessados = candidatosProcessados.map((c, i) => ({ ...c, rank: i + 1 }));
-
-    let statusTexto = "Em andamento";
-    if (brasilData.ea === 'M') {
-      statusTexto = "Matematicamente Definido";
-    } else if (pst === '100,00') {
-      statusTexto = "Totalização Concluída";
-    }
-
     const payload = {
       source: "TSE_PRODUCAO_OFICIAL",
-      hora: horaExibicao,
-      dataGeracao: dataGeracao,
-      statusTotalizacao: statusTexto,
+      horaLoteTse: horaLoteTse,
+      dataLoteTse: dataLoteTse,
       pst: pst,
       secoesTotalizadas: secoesTotalizadas,
       totalSecoes: totalSecoes,
-      secoesNaoTotalizadas: secoesNaoTotalizadas,
-      totalEleitores: totalEleitores,
-      comparecimento: comparecimento,
-      comparecimentoPerc: comparecimentoPerc,
-      abstencao: abstencao,
-      abstencaoPerc: abstencaoPerc,
-      votosValidos: votosValidos,
-      votosValidosPerc: votosValidosPerc,
-      votosBrancos: votosBrancos,
-      votosBrancosPerc: votosBrancosPerc,
-      votosNulos: votosNulos,
-      votosNulosPerc: votosNulosPerc,
-      votosTotal: votosTotal,
       candidatos: candidatosProcessados,
       estados: estadosMap
     };
