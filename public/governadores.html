@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Governadores 2026 - Apuração nos 8 Principais Estados</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Google Fonts: Montserrat & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,700;0,800;0,900;1,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Font Awesome 6 Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: radial-gradient(circle at 50% 20%, #20355b 0%, #1a2542 50%, #28194a 100%);
+      color: #ffffff;
+      height: 100vh;
+      width: 100vw;
+    }
+
+    .heading-font {
+      font-family: 'Montserrat', sans-serif;
+    }
+
+    /* Container de tela cheia sem barras de rolagem */
+    .slide-stage {
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-sizing: border-box;
+      padding: 1.8vh 2.2vw;
+      position: relative;
+    }
+
+    /* Balão individual do estado */
+    .state-balloon {
+      background: rgba(17, 24, 39, 0.88);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 14px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 15px 30px -10px rgba(0, 0, 0, 0.6);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 1.4vh 1.2vw;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .state-balloon:hover {
+      border-color: rgba(56, 189, 248, 0.4);
+      transform: translateY(-2px);
+    }
+
+    /* Indicador luminoso pulsante */
+    .pulse-dot {
+      animation: pulseAnimation 1.6s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    @keyframes pulseAnimation {
+      0%, 100% { opacity: 1; }
+      50% { opacity: .25; }
+    }
+
+    /* Painel discreto de botões */
+    .screen-control-btn {
+      opacity: 0.4;
+      transition: opacity 0.3s;
+    }
+    .screen-control-btn:hover {
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="slide-stage">
+
+    <!-- Header do Slide -->
+    <header class="flex items-center justify-between h-[6vh] min-h-[44px] border-b border-white/10 pb-2">
+      
+      <!-- Lado Esquerdo: Identificação Oficial -->
+      <div class="flex items-center space-x-3">
+        <div class="bg-blue-600 text-white w-9 h-9 rounded-lg flex items-center justify-center font-black text-sm shadow-md">
+          <i class="fa-solid fa-landmark"></i>
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <h1 class="heading-font text-lg lg:text-xl font-black uppercase tracking-wider text-white">Eleições 2026 &bull; Governadores</h1>
+            <span class="bg-red-500/20 text-red-400 text-[10px] font-bold px-2 py-0.5 rounded-full border border-red-500/30 flex items-center gap-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-red-500 pulse-dot"></span>
+              AO VIVO
+            </span>
+          </div>
+          <p class="text-[11px] text-gray-400">Totalização Oficial nos 8 Maiores Colégios Eleitorais do País</p>
+        </div>
+      </div>
+
+      <!-- Centro: Horário Oficial da Apuração -->
+      <div class="text-center">
+        <div class="flex items-baseline justify-center space-x-2">
+          <span class="text-xs text-gray-400 uppercase font-semibold">TSE:</span>
+          <span id="label-hora" class="heading-font text-2xl lg:text-3xl font-black text-white leading-none">--:--</span>
+        </div>
+      </div>
+
+      <!-- Lado Direito: Navegação entre Telas e Botões -->
+      <div id="painel-controles" class="flex items-center space-x-2 screen-control-btn">
+        <a href="/" class="bg-gray-800 hover:bg-gray-700 text-gray-200 text-xs font-semibold py-1.5 px-3 rounded-lg border border-gray-700 transition flex items-center gap-1.5">
+          <i class="fa-solid fa-user-tie text-blue-400"></i>
+          <span>Presidente (Slide)</span>
+        </a>
+
+        <a href="/detalhes.html" class="bg-gray-800 hover:bg-gray-700 text-gray-200 text-xs font-semibold py-1.5 px-3 rounded-lg border border-gray-700 transition flex items-center gap-1.5">
+          <i class="fa-solid fa-chart-line text-emerald-400"></i>
+          <span>Painel Completo</span>
+        </a>
+
+        <button id="btn-fullscreen" class="bg-black/50 hover:bg-black/80 text-white p-2 rounded-lg border border-white/20 transition">
+          <i class="fa-solid fa-expand text-xs"></i>
+        </button>
+        <button id="btn-refresh" class="bg-black/50 hover:bg-black/80 text-white p-2 rounded-lg border border-white/20 transition">
+          <i class="fa-solid fa-arrows-rotate text-xs" id="refresh-icon"></i>
+        </button>
+      </div>
+
+    </header>
+
+    <!-- Grid dos 8 Balões (4 colunas x 2 linhas) -->
+    <main class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 lg:gap-4 h-[89vh] py-1">
+      
+      <!-- 1. SÃO PAULO (SP) -->
+      <div class="state-balloon" id="card-sp">
+        <div class="flex items-center justify-between border-b border-white/10 pb-2">
+          <div class="flex items-center space-x-2">
+            <span class="heading-font bg-blue-600/30 text-blue-400 border border-blue-500/40 text-xs font-black px-2 py-0.5 rounded">SP</span>
+            <span class="heading-font font-extrabold text-sm text-white">São Paulo</span>
+          </div>
+          <span class="text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded" id="pst-sp">0,00% apurado</span>
+        </div>
+
+        <div class="space-y-1.5 my-auto">
+          <!-- 1º Colocado -->
+          <div class="bg-white/5 p-2 rounded-lg border-l-4 border-blue-500 flex items-center justify-between">
+            <div class="truncate mr-2">
+              <div class="flex items-center space-x-1.5">
+                <span class="text-[10px] font-black text-yellow-400 uppercase">#1</span>
+                <h3 class="heading-font font-black text-sm text-white truncate" id="cand1-nome-sp">Aguardando dados</h3>
+              </div>
+              <p class="text-[10px] text-gray-400" id="cand1-partido-sp">Partido --</p>
+            </div>
+            <div class="text-right flex-shrink-0">
+              <span class="heading-font text-xl lg:text-2xl font-black text-white leading-none block" id="cand1-perc-sp">0,00%</span>
+              <span class="text-[10px] text-gray-400" id="cand1-votos-sp">0 votos</span>
+            </div>
+          </div>
+
+          <!-- 2º Colocado -->
+          <div class="bg-white/5 p-2 rounded-lg border-l-4 border-gray-600 flex items-center justify-between">
+            <div class="truncate mr-2">
+              <div class="flex items-center space-x-1.5">
+                <span class="text-[10px] font-bold text-gray-400 uppercase">#2</span>
+                <h4 class="heading-font font-bold text-xs text-gray-200 truncate" id="cand2-nome-sp">Aguardando dados</h4>
+              </div>
+              <p class="text-[10px] text-gray-400" id="cand2-partido-sp">Partido --</p>
+            </div>
+            <div class="text-right flex-shrink-0">
+              <span class="heading-font text-lg font-black text-gray-300 leading-none block" id="cand2-perc-sp">0,00%</span>
+              <span class="text-[10px] text-gray-400" id="cand2-votos-sp">0 votos</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="w-full bg-gray-800 rounded-full h-1 overflow-hidden">
+          <div class="bg-blue-500 h-full transition-all duration-700" id="bar-sp" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <!-- 2. MINAS GERAIS (MG) -->
+      <div class="state-balloon" id="card-mg">
+        <div class="flex items-center justify-between border-b border-white/10 pb-2">
+          <div class="flex items-center space-x-2">
+            <span class="heading-font bg-red-600/30 text-red-400 border border-red-500/40 text-xs font-black px-2 py-0.5 rounded">MG</span>
+            <span class="heading-font font-extrabold text-sm text-white">Minas Gerais</span>
+          </div>
+          <span class="text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded" id="pst-mg">0,00% apurado</span>
+        </div>
+
+        <div class="space-y-1.5 my-auto">
+          <div class="bg-white/5 p-2 rounded-lg border-l-4 border-red-500 flex items-center justify-between">
+            <div class="truncate mr-2">
+              <div class="flex items-center space-x-1.5">
+                <span class="text-[10px] font-black text-yellow-400 uppercase">#1</span>
+                <h3 class="heading-font font-black text-sm text-white truncate" id="cand1-nome-mg">Aguardando dados</h3>
+              </div>
+              <p class="text-[10px] text-gray-400" id="cand1-partido-mg">Partido --</p>
+            </div>
+            <div class="text-right flex-shrink-0">
+              <span class="heading-font text-xl lg:text-2xl font-black text-white leading-none block" id="cand1-perc-mg">0,00%</span>
+              <span class="text-[10px] text-gray-400" id="cand1-votos-mg">0 votos</span>
+            </div>
+          </div>
+
+          <div class="bg-white/5 p-2 rounded-lg border-l-4 border-gray-600 flex items-center justify-between">
+            <div class="truncate mr-2">
+              <div class="flex items-center space-x-1.5">
+                <span class="text-[10px] font-bold text-gray-400 uppercase">#2</span>
+                <h4 class="heading-font font-bold text-xs text-gray-200 truncate" id="cand2-nome-mg">Aguardando dados</h4>
+              </div>
+              <p class="text-[10px] text-gray-400" id="cand2-partido-mg">Partido --</p>
+            </div>
+            <div class="text-right flex-shrink-0">
+              <span class="heading-font text-lg font-black text-gray-300 leading-none block" id="cand2-perc-mg">0,00%</span>
+              <span class="text-[10px] text-gray-400" id="cand2-votos-mg">0 votos</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="w-full bg-gray-800 rounded-full h-1 overflow-hidden">
+          <div class="bg-red-500 h-full transition-all duration-700" id="bar-mg" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <!-- 3. BAHIA (BA) -->
+      <div class="state-balloon" id="card-ba">
+        <div class="flex items-center justify-between border-b border-white/10 pb-2">
+          <div class="flex items-center space-x-2">
+            <span class="heading-font bg-red-600/30 text-red-400 border border-red-500/40 text-xs font-black px-2 py-0.5 rounded">BA</span>
+            <span class="heading-font font-extrabold text-sm text-white">Bahia</span>
+          </div>
+          <span class="text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded" id="pst-ba">0,00% apurado</span>
+        </div>
+
+        <div class="space-y-1.5 my-auto">
+          <div class="bg-white/5 p-2 rounded-lg border-l-4 border-red-500 flex items-center justify-between">
+            <div class="truncate mr-2">
+              <div class="flex items-center space-x-1.5">
+                <span class="text-[10px] font-black text-yellow-400 uppercase">#1</span>
+                <h3 class="heading-font font-black text-sm text-white truncate" id="cand1-nome-ba">Aguardando dados</h3>
+              </div>
+              <p class="text-[10px] text-gray-400" id="cand1-partido-ba">Partido --</p>
+            </div>
+            <div class="text-right flex-shrink-0">
+              <span class="heading-font text-xl lg:text-2xl font-black text-white leading-none block" id="cand1-perc-ba">0,00%</span>
+              <span class="text-[10px] text-gray-400" id="cand1-votos-ba">0 votos</span>
+            </div>
+          </div>
+
+          <div class="bg-white/5 p-2 rounded-lg border-l-4 border-gray-600 flex items-center justify-between">
+            <div class="truncate mr-2">
+              <div class="flex items-center space-x-1.5">
+                <span class="text-[10px] font-bold text-gray-400 uppercase">#2</span>
+                <h4 class="heading-font font-bold text-xs text-gray-200 truncate" id="cand2-nome-ba">Aguardando dados</h4>
+              </div>
+              <p class="text-[10px] text-gray-400" id="cand2-partido-ba">Partido --</p>
+            </div>
+            <div class="text-right flex-shrink-0">
+              <span class="heading-font text-lg font-black text-gray-300 leading-none block" id="cand2-perc-ba">0,00%</span>
+              <span class="text-[10px] text-gray-400" id="cand2-votos-ba">0 votos</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="w-full bg-gray-800 rounded-full h-1 overflow-hidden">
+          <div class="bg-red-500 h-full transition-all duration-700" id="bar-ba" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <!-- 4. RIO DE JANEIRO (RJ) -->
+      <div class="state-balloon" id="card-rj">
+        <div class="flex items-center justify-between border-b border-white/10 pb-2">
+          <div class="flex items-center space-x-2">
+            <span class="heading-font bg-blue-600/30 text-blue-400 border border-blue-500/40 text-xs font-black px-2 py-0.5 rounded">RJ</span>
+            <span class="heading-font font-extrabold text-sm text-white">Rio de Janeiro</span>
+          </div>
+          <span class="text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded" id="pst-rj">0,00% apurado</span>
+        </div>
+
+        <div class="space-y-1.5 my-auto">
+          <div class="bg-white/5 p-2 rounded-lg border-l-4 border-blue-500 flex items-center justify-between">
+            <div class="truncate mr-2">
+              <div class="flex items-center space-x-1.5">
+                <span class="text-[10px] font-black text-yellow-400 uppercase">#1</span>
+                <h3 class="heading-font font-black text-sm text-white truncate" id="cand1-nome-rj">Aguardando dados</h3>
+              </div>
+              <p class="text-[10px] text-gray-400" id="cand1-partido-rj">Partido --</p>
+            </div>
+            <div class="text-right flex-shrink-0">
+              <span class="heading-font text-xl lg:text-2xl font-black text-white leading-none block" id="cand1-perc-rj">0,00%</span>
+              <span class="text-[10px] text-gray-400" id="cand1-votos-rj">0 votos</span>
+            </div>
+          </div>
+
+          <div class="bg-white/5 p-2 rounded-lg border-l-4 border-gray-600 flex items-center justify-between">
+            <div class="truncate mr-2">
+              <div class="flex items-center space-x-1.5">
+                <span class="text-[10px] font-bold text-gray-400 uppercase">#2</span>
+                <h4 class="heading-font font-bold text-xs text-gray-200 truncate" id="cand2-nome-rj">Aguardando dados</h4>
+              </div>
+              <p class="text-[10px] text-gray-400" id="cand2-partido-rj">Partido --</p>
+            </div>
+            <div class="text-right flex-shrink-0">
+              <span class="heading-font text-lg font-black text-gray-300 leading-none block" id="cand2-perc-rj">0,00%</span>
+              <span class="text-[10px] text-gray-400" id="cand2-votos-rj">0 votos</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="w-full bg-gray-800 rounded-full h-1 overflow-hidden">
+          <div class="bg-blue-500 h-full transition-all duration-700" id="bar-rj" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <!-- 5. PARANÁ (PR) -->
+      <div class="state-balloon" id="card-pr">
+        <div class="flex items-center justify-between border-b border-white/10 pb-2">
+          <div class="flex items-center space-x-2">
+            <span class="heading-font bg-emerald-600/30 text-emerald-400 border border-emerald-500/40 text-xs font-black px-2 py-0.5 rounded">PR</span>
+            <span class="heading-font font-extrabold text-sm text-white">Paraná</span>
+          </div>
+          <span class="text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded" id="pst-pr">0,00% apurado</span>
+        </div>
+
+        <div class="space-y-1.5 my-auto">
+          <div class="bg-white/5 p-2 rounded-lg border-l-4 border-emerald-500 flex items-center justify-between">
+            <div class="truncate mr-2">
+              <div class="flex items-center space-x-1.5">
+                <span class="text-[10px] font-black text-yellow-400 uppercase">#1</span>
+                <h3 class="heading-font font-black text-sm text-white truncate" id="cand1-nome-pr">Aguardando dados</h3>
+              </div>
+              <p class="text-[10px] text-gray-400" id="cand1-partido-pr">Partido --</p>
+            </div>
+            <div class="text-right flex-shrink-0">
+              <span class="heading-font text-xl lg:text-2xl font-black text-white leading-none block" id="cand1-perc-pr">0,00%</span>
+              <span class="text-[10px] text-gray-400" id="cand1-votos-pr">0 votos</span>
+            </div>
+          </div>
+
+          <div class="bg-white/5 p-2 rounded-lg border-l-4 border-gray-600 flex items-center justify-between">
+            <div class="truncate mr-2">
+              <div class="flex items-center space-x-1.5">
+                <span class="text-[10px] font-bold text-gray-400 uppercase">#2</span>
+                <h4 class="heading-font font-bold text-xs text-gray-200 truncate" id="cand2-nome-pr">Aguardando dados</h4>
+              </div>
+              <p class="text-[10px] text-gray-400" id="cand2-partido-pr">Partido --</p>
+            </div>
+            <div class="text-right flex-shrink-0">
+              <span class="heading-font text-lg font-black text-gray-300 leading-none block" id="cand2-perc-pr">0,00%</span>
+              <span class="text-[10px] text-gray-400" id="cand2-votos-pr">0 votos</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="w-full bg-gray-800 rounded-full h-1 overflow-hidden">
+          <div class="bg-emerald-500 h-full transition-all duration-700" id="bar-pr" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <!-- 6. RIO GRANDE DO SUL (RS) -->
+      <div class="state-balloon" id="card-rs">
+        <div class="flex items-center justify-between border-b border-white/10 pb-2">
+          <div class="flex items-center space-x-2">
+            <span class="heading-font bg-amber-600/30 text-amber-400 border border-amber-500/40 text-xs font-black px-2 py-0.5 rounded">RS</span>
+            <span class="heading-font font-extrabold text-sm text-white">Rio Grande do Sul</span>
+          </div>
+          <span class="text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded" id="pst-rs">0,00% apurado</span>
+        </div>
+
+        <div class="space-y-1.5 my-auto">
+          <div class="bg-white/5 p-2 rounded-lg border-l-4 border-amber-500 flex items-center justify-between">
+            <div class="truncate mr-2">
+              <div class="flex items-center space-x-1.5">
+                <span class="text-[10px] font-black text-yellow-400 uppercase">#1</span>
+                <h3 class="heading-font font-black text-sm text-white truncate" id="cand1-nome-rs">Aguardando dados</h3>
+              </div>
+              <p class="text-[10px] text-gray-400" id="cand1-partido-rs">Partido --</p>
+            </div>
+            <div class="text-right flex-shrink-0">
+              <span class="heading-font text-xl lg:text-2xl font-black text-white leading-none block" id="cand1-perc-rs">0,00%</span>
+              <span class="text-[10px] text-gray-400" id="cand1-votos-rs">0 votos</span>
+            </div>
+          </div>
+
+          <div class="bg-white/5 p-2 rounded-lg border-l-4 border-gray-600 flex items-center justify-between">
+            <div class="truncate mr-2">
+              <div class="flex items-center space-x-1.5">
+                <span class="text-[10px] font-bold text-gray-400 uppercase">#2</span>
+                <h4 class="heading-font font-bold text-xs text-gray-200 truncate" id="cand2-nome-rs">Aguardando dados</h4>
+              </div>
+              <p class="text-[10px] text-gray-400" id="cand2-partido-rs">Partido --</p>
+            </div>
+            <div class="text-right flex-shrink-0">
+              <span class="heading-font text-lg font-black text-gray-300 leading-none block" id="cand2-perc-rs">0,00%</span>
+              <span class="text-[10px] text-gray-400" id="cand2-votos-rs">0 votos</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="w-full bg-gray-800 rounded-full h-1 overflow-hidden">
+          <div class="bg-amber-500 h-full transition-all duration-700" id="bar-rs" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <!-- 7. CEARÁ (CE) -->
+      <div class="state-balloon" id="card-ce">
+        <div class="flex items-center justify-between border-b border-white/10 pb-2">
+          <div class="flex items-center space-x-2">
+            <span class="heading-font bg-cyan-600/30 text-cyan-400 border border-cyan-500/40 text-xs font-black px-2 py-0.5 rounded">CE</span>
+            <span class="heading-font font-extrabold text-sm text-white">Ceará</span>
+          </div>
+          <span class="text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded" id="pst-ce">0,00% apurado</span>
+        </div>
+
+        <div class="space-y-1.5 my-auto">
+          <div class="bg-white/5 p-2 rounded-lg border-l-4 border-cyan-500 flex items-center justify-between">
+            <div class="truncate mr-2">
+              <div class="flex items-center space-x-1.5">
+                <span class="text-[10px] font-black text-yellow-400 uppercase">#1</span>
+                <h3 class="heading-font font-black text-sm text-white truncate" id="cand1-nome-ce">Aguardando dados</h3>
+              </div>
+              <p class="text-[10px] text-gray-400" id="cand1-partido-ce">Partido --</p>
+            </div>
+            <div class="text-right flex-shrink-0">
+              <span class="heading-font text-xl lg:text-2xl font-black text-white leading-none block" id="cand1-perc-ce">0,00%</span>
+              <span class="text-[10px] text-gray-400" id="cand1-votos-ce">0 votos</span>
+            </div>
+          </div>
+
+          <div class="bg-white/5 p-2 rounded-lg border-l-4 border-gray-600 flex items-center justify-between">
+            <div class="truncate mr-2">
+              <div class="flex items-center space-x-1.5">
+                <span class="text-[10px] font-bold text-gray-400 uppercase">#2</span>
+                <h4 class="heading-font font-bold text-xs text-gray-200 truncate" id="cand2-nome-ce">Aguardando dados</h4>
+              </div>
+              <p class="text-[10px] text-gray-400" id="cand2-partido-ce">Partido --</p>
+            </div>
+            <div class="text-right flex-shrink-0">
+              <span class="heading-font text-lg font-black text-gray-300 leading-none block" id="cand2-perc-ce">0,00%</span>
+              <span class="text-[10px] text-gray-400" id="cand2-votos-ce">0 votos</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="w-full bg-gray-800 rounded-full h-1 overflow-hidden">
+          <div class="bg-cyan-500 h-full transition-all duration-700" id="bar-ce" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <!-- 8. PERNAMBUCO (PE) -->
+      <div class="state-balloon" id="card-pe">
+        <div class="flex items-center justify-between border-b border-white/10 pb-2">
+          <div class="flex items-center space-x-2">
+            <span class="heading-font bg-purple-600/30 text-purple-400 border border-purple-500/40 text-xs font-black px-2 py-0.5 rounded">PE</span>
+            <span class="heading-font font-extrabold text-sm text-white">Pernambuco</span>
+          </div>
+          <span class="text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded" id="pst-pe">0,00% apurado</span>
+        </div>
+
+        <div class="space-y-1.5 my-auto">
+          <div class="bg-white/5 p-2 rounded-lg border-l-4 border-purple-500 flex items-center justify-between">
+            <div class="truncate mr-2">
+              <div class="flex items-center space-x-1.5">
+                <span class="text-[10px] font-black text-yellow-400 uppercase">#1</span>
+                <h3 class="heading-font font-black text-sm text-white truncate" id="cand1-nome-pe">Aguardando dados</h3>
+              </div>
+              <p class="text-[10px] text-gray-400" id="cand1-partido-pe">Partido --</p>
+            </div>
+            <div class="text-right flex-shrink-0">
+              <span class="heading-font text-xl lg:text-2xl font-black text-white leading-none block" id="cand1-perc-pe">0,00%</span>
+              <span class="text-[10px] text-gray-400" id="cand1-votos-pe">0 votos</span>
+            </div>
+          </div>
+
+          <div class="bg-white/5 p-2 rounded-lg border-l-4 border-gray-600 flex items-center justify-between">
+            <div class="truncate mr-2">
+              <div class="flex items-center space-x-1.5">
+                <span class="text-[10px] font-bold text-gray-400 uppercase">#2</span>
+                <h4 class="heading-font font-bold text-xs text-gray-200 truncate" id="cand2-nome-pe">Aguardando dados</h4>
+              </div>
+              <p class="text-[10px] text-gray-400" id="cand2-partido-pe">Partido --</p>
+            </div>
+            <div class="text-right flex-shrink-0">
+              <span class="heading-font text-lg font-black text-gray-300 leading-none block" id="cand2-perc-pe">0,00%</span>
+              <span class="text-[10px] text-gray-400" id="cand2-votos-pe">0 votos</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="w-full bg-gray-800 rounded-full h-1 overflow-hidden">
+          <div class="bg-purple-500 h-full transition-all duration-700" id="bar-pe" style="width: 0%"></div>
+        </div>
+      </div>
+
+    </main>
+
+  </div>
+
+  <script>
+    // Suporte ao OBS Studio (?obs=true)
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('obs') === 'true' || urlParams.get('clean') === 'true') {
+      const controles = document.getElementById('painel-controles');
+      if (controles) controles.style.display = 'none';
+    }
+
+    async function syncGovernadoresData() {
+      const icon = document.getElementById('refresh-icon');
+      if (icon) icon.classList.add('fa-spin');
+
+      try {
+        const res = await fetch('/api/governadores');
+        const data = await res.json();
+
+        // Atualização do horário oficial do TSE
+        document.getElementById('label-hora').innerText = data.hora || "--:--";
+
+        const baloes = data.baloes || [];
+        baloes.forEach(b => {
+          const uf = b.uf.toLowerCase();
+
+          // Percentual apurado
+          const elPst = document.getElementById(`pst-${uf}`);
+          if (elPst) elPst.innerText = `${b.pst}% apurado`;
+
+          // Mini barra de progresso
+          const elBar = document.getElementById(`bar-${uf}`);
+          if (elBar) {
+            const numPst = parseFloat((b.pst || '0').replace(',', '.'));
+            elBar.style.width = `${Math.min(numPst, 100)}%`;
+          }
+
+          // 1º Colocado
+          const elC1Nome = document.getElementById(`cand1-nome-${uf}`);
+          const elC1Part = document.getElementById(`cand1-partido-${uf}`);
+          const elC1Perc = document.getElementById(`cand1-perc-${uf}`);
+          const elC1Vots = document.getElementById(`cand1-votos-${uf}`);
+
+          if (elC1Nome && b.cand1) {
+            elC1Nome.innerText = b.cand1.nomeUrna;
+            elC1Part.innerText = `Partido: ${b.cand1.partido}`;
+            elC1Perc.innerText = `${b.cand1.pvap}%`;
+            elC1Vots.innerText = `${parseInt(b.cand1.vap || 0).toLocaleString('pt-BR')} votos`;
+          }
+
+          // 2º Colocado
+          const elC2Nome = document.getElementById(`cand2-nome-${uf}`);
+          const elC2Part = document.getElementById(`cand2-partido-${uf}`);
+          const elC2Perc = document.getElementById(`cand2-perc-${uf}`);
+          const elC2Vots = document.getElementById(`cand2-votos-${uf}`);
+
+          if (elC2Nome && b.cand2) {
+            elC2Nome.innerText = b.cand2.nomeUrna;
+            elC2Part.innerText = `Partido: ${b.cand2.partido}`;
+            elC2Perc.innerText = `${b.cand2.pvap}%`;
+            elC2Vots.innerText = `${parseInt(b.cand2.vap || 0).toLocaleString('pt-BR')} votos`;
+          }
+        });
+
+      } catch (err) {
+        console.error("Falha ao sincronizar governadores:", err);
+      } finally {
+        if (icon) setTimeout(() => icon.classList.remove('fa-spin'), 500);
+      }
+    }
+
+    // Tela cheia
+    const btnFull = document.getElementById('btn-fullscreen');
+    if (btnFull) {
+      btnFull.addEventListener('click', () => {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen().catch(e => console.log(e));
+        } else {
+          if (document.exitFullscreen) document.exitFullscreen();
+        }
+      });
+    }
+
+    const btnRef = document.getElementById('btn-refresh');
+    if (btnRef) {
+      btnRef.addEventListener('click', syncGovernadoresData);
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      syncGovernadoresData();
+      // Atualização contínua a cada 15 segundos
+      setInterval(syncGovernadoresData, 15000);
+    });
+  </script>
+</body>
+</html>
