@@ -1,4 +1,4 @@
-// functions/api/eleicoes.js - Cloudflare Pages Function Oficial
+// functions/api/eleicoes.js - Parser Oficial Compatível com o Schema do TSE 2026
 const TSE_BASE_URL = 'https://resultados.tse.jus.br/oficial';
 const ELEICAO_ID = '6257';
 const ELEICAO_CODE = 'e006257';
@@ -26,28 +26,80 @@ const CANDIDATOS_CONFIG = [
   { shortName: "CLARIANA", nome: "Clariana Barão", partido: "DC", fotoArquivo: "DC", numero: "27", color: "#0891b2" }
 ];
 
+// Extrator universal: extrai candidatos tanto da estrutura aninhada (carg -> agr -> par -> cand) quanto da plana (cand[])
+function extractCandidatesUniversal(tseData) {
+  const candidates = [];
+  if (!tseData) return candidates;
+
+  // 1. Formato Unificado Oficial (-u.json)
+  if (tseData.carg && Array.isArray(tseData.carg) && tseData.carg.length > 0) {
+    const cargo = tseData.carg[0];
+    if (cargo.agr && Array.isArray(cargo.agr)) {
+      for (const agr of cargo.agr) {
+        const com = agr.com || '';
+        if (agr.par && Array.isArray(agr.par)) {
+          for (const par of agr.par) {
+            const sg = par.sg || '';
+            if (par.cand && Array.isArray(par.cand)) {
+              for (const c of par.cand) {
+                candidates.push({
+                  n: String(c.n || '').trim(),
+                  nm: c.nm || '',
+                  nmu: c.nmu || c.nm || '',
+                  sg: sg,
+                  cc: com,
+                  vap: String(c.vap || '0'),
+                  pvap: String(c.pvap || '0,00'),
+                  st: c.st || ''
+                });
+              }
+            }
+          }
+        }
+      }
+    }
+  } 
+  // 2. Formato Simplificado (-r.json)
+  else if (tseData.cand && Array.isArray(tseData.cand)) {
+    for (const c of tseData.cand) {
+      candidates.push({
+        n: String(c.n || '').trim(),
+        nm: c.nm || '',
+        nmu: c.nmu || c.nm || '',
+        sg: (c.cc || '').split(' ')[0] || '',
+        cc: c.cc || '',
+        vap: String(c.vap || '0'),
+        pvap: String(c.pvap || '0,00'),
+        st: c.st || ''
+      });
+    }
+  }
+
+  return candidates;
+}
+
 function matchCandidate(tseCand) {
   const numStr = String(tseCand.n || '').trim();
-  const nomeStr = (tseCand.nm || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-  const coligacao = (tseCand.cc || '').toUpperCase();
+  const sgUpper = String(tseCand.sg || '').toUpperCase().trim();
+  const coligacao = String(tseCand.cc || '').toUpperCase();
 
+  // 1. Casamento direto por número oficial
   const porNumero = CANDIDATOS_CONFIG.find(c => c.numero === numStr);
   if (porNumero) return porNumero;
 
-  const porPartido = CANDIDATOS_CONFIG.find(c => {
-    const pNorm = c.partido.toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-    return coligacao.includes(pNorm);
-  });
+  // 2. Casamento por sigla do partido
+  const porPartido = CANDIDATOS_CONFIG.find(c => c.partido.toUpperCase() === sgUpper);
   if (porPartido) return porPartido;
 
-  const porNome = CANDIDATOS_CONFIG.find(c => nomeStr.includes(c.shortName.toLowerCase()));
-  if (porNome) return porNome;
+  // 3. Casamento pela coligação
+  const porColigacao = CANDIDATOS_CONFIG.find(c => coligacao.includes(c.partido.toUpperCase()));
+  if (porColigacao) return porColigacao;
 
   return {
-    shortName: (tseCand.nm || 'CANDIDATO').split(' ')[0].toUpperCase(),
-    nome: tseCand.nm || 'Candidato',
-    partido: coligacao.split(' ')[0] || 'OUTRO',
-    fotoArquivo: coligacao.split(' ')[0] || 'OUTRO',
+    shortName: (tseCand.nmu || tseCand.nm || 'CANDIDATO').split(' ')[0].toUpperCase(),
+    nome: tseCand.nmu || tseCand.nm || 'Candidato',
+    partido: tseCand.sg || 'OUTRO',
+    fotoArquivo: tseCand.sg || 'OUTRO',
     numero: numStr,
     color: '#475569'
   };
@@ -79,22 +131,32 @@ async function fetchTseScope(scope) {
 export async function onRequestGet() {
   try {
     const brasilData = await fetchTseScope('br');
+    const rawCandidates = extractCandidatesUniversal(brasilData);
 
-    // Estado antes das 17h00 (espera de apuração)
-    if (!brasilData || !brasilData.cand || brasilData.cand.length === 0) {
-      const now = new Date();
-      const horaString = now.toLocaleTimeString('pt-BR', {
+    // Extração robusta dos metadados de seções (objeto 's')
+    const secoes = brasilData && typeof brasilData.s === 'object' ? brasilData.s : {};
+    const pst = secoes.pst || (brasilData && brasilData.pst) || '0,00';
+    const totalSecoes = secoes.ts || (brasilData && brasilData.s) || '499248';
+    const secoesTotalizadas = secoes.st || (brasilData && brasilData.st) || '0';
+
+    // Determina a hora de exibição
+    let horaExibicao = (brasilData && brasilData.hg ? brasilData.hg.substring(0, 5) : '');
+    if (!horaExibicao) {
+      horaExibicao = new Date().toLocaleTimeString('pt-BR', {
         timeZone: 'America/Sao_Paulo',
         hour: '2-digit',
         minute: '2-digit'
       });
+    }
 
+    // Se o arquivo ainda não existe ou não possui candidatos
+    if (!brasilData || rawCandidates.length === 0) {
       const prePayload = {
         source: "TSE_PRODUCAO_AGUARDANDO",
-        hora: horaString,
+        hora: horaExibicao,
         pst: "0,00",
         secoesTotalizadas: "0",
-        totalSecoes: brasilData && brasilData.s ? brasilData.s : "498960",
+        totalSecoes: totalSecoes,
         candidatos: CANDIDATOS_CONFIG.map(c => ({
           shortName: c.shortName,
           nome: c.nome,
@@ -116,7 +178,7 @@ export async function onRequestGet() {
       });
     }
 
-    // Consulta às 27 UFs
+    // Consulta paralela das 27 Unidades Federativas para o mapa do IBGE
     const ufPromises = ESTADOS.map(async (uf) => {
       const data = await fetchTseScope(uf);
       return { uf: uf.toUpperCase(), data };
@@ -126,26 +188,30 @@ export async function onRequestGet() {
     const estadosMap = {};
 
     ufResponses.forEach(({ uf, data }) => {
-      if (data && data.cand && data.cand.length > 0) {
-        const sorted = [...data.cand].sort((a, b) => parseInt(b.vap || '0', 10) - parseInt(a.vap || '0', 10));
-        const leaderRaw = sorted[0];
-        const leaderConf = matchCandidate(leaderRaw);
+      if (data) {
+        const uCands = extractCandidatesUniversal(data);
+        if (uCands.length > 0) {
+          uCands.sort((a, b) => parseInt(b.vap || '0', 10) - parseInt(a.vap || '0', 10));
+          const leaderRaw = uCands[0];
+          const leaderConf = matchCandidate(leaderRaw);
 
-        estadosMap[uf] = {
-          uf: uf,
-          pst: data.pst || "0,00",
-          leader: {
-            shortName: leaderConf.shortName,
-            partido: leaderConf.partido,
-            percentual: leaderRaw.pvap || "0,00",
-            color: leaderConf.color
-          }
-        };
+          const uSec = typeof data.s === 'object' ? data.s : {};
+          estadosMap[uf] = {
+            uf: uf,
+            pst: uSec.pst || data.pst || "0,00",
+            leader: {
+              shortName: leaderConf.shortName,
+              partido: leaderConf.partido,
+              percentual: leaderRaw.pvap || "0,00",
+              color: leaderConf.color
+            }
+          };
+        }
       }
     });
 
-    // Ordenação decrescente rigorosa por votos válidos
-    const candidatosProcessados = (brasilData.cand || []).map(tseCand => {
+    // Mapeamento dos candidatos nacionais
+    let candidatosProcessados = rawCandidates.map(tseCand => {
       const conf = matchCandidate(tseCand);
       return {
         shortName: conf.shortName,
@@ -157,23 +223,29 @@ export async function onRequestGet() {
         color: conf.color,
         st: tseCand.st || 'Em apuração'
       };
-    }).sort((a, b) => parseInt(b.vap, 10) - parseInt(a.vap, 10));
+    });
 
-    let horaExibicao = (brasilData.hg || '').substring(0, 5);
-    if (!horaExibicao) {
-      horaExibicao = new Date().toLocaleTimeString('pt-BR', {
-        timeZone: 'America/Sao_Paulo',
-        hour: '2-digit',
-        minute: '2-digit'
+    // Ordenação decrescente:
+    // Se ainda estiver com 0 votos em tudo (antes das 17h), preserva a ordem de exibição inicial do slide (Lula na esquerda, Flávio na direita)
+    const algumVoto = candidatosProcessados.some(c => parseInt(c.vap, 10) > 0);
+    if (algumVoto) {
+      candidatosProcessados.sort((a, b) => parseInt(b.vap, 10) - parseInt(a.vap, 10));
+    } else {
+      // Ordenação padrão para tela de espera com os dois primeiros definidos no slide
+      const ordemDesejada = ["LULA", "FLAVIO", "CAIADO", "ZEMA", "RENAN", "CURY", "SAMARA", "HERTZ", "EDMILSON", "RUI PIMENTA", "AVALANCHE", "GRASSI", "CLARIANA"];
+      candidatosProcessados.sort((a, b) => {
+        const idxA = ordemDesejada.indexOf(a.shortName);
+        const idxB = ordemDesejada.indexOf(b.shortName);
+        return (idxA === -1 ? 99 : idxA) - (idxB === -1 ? 99 : idxB);
       });
     }
 
     const payload = {
       source: "TSE_PRODUCAO_OFICIAL",
       hora: horaExibicao,
-      pst: brasilData.pst || "0,00",
-      secoesTotalizadas: brasilData.st || "0",
-      totalSecoes: brasilData.s || "0",
+      pst: pst,
+      secoesTotalizadas: secoesTotalizadas,
+      totalSecoes: totalSecoes,
       candidatos: candidatosProcessados,
       estados: estadosMap
     };
