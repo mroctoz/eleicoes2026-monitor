@@ -146,12 +146,16 @@ export async function onRequestGet() {
     ufResponses.forEach(({ uf, data }) => {
       if (data) {
         const uCands = extractCandidatesUniversal(data);
-        if (uCands.length > 0) {
+        const uSec = typeof data.s === 'object' ? data.s : {};
+        
+        // Verifica se já existe ao menos 1 voto computado no estado
+        const temVotos = uCands.some(c => parseInt(c.vap || '0', 10) > 0);
+
+        if (uCands.length > 0 && temVotos) {
           uCands.sort((a, b) => parseInt(b.vap || '0', 10) - parseInt(a.vap || '0', 10));
           const leaderRaw = uCands[0];
           const leaderConf = matchCandidate(leaderRaw);
 
-          const uSec = typeof data.s === 'object' ? data.s : {};
           estadosMap[uf] = {
             uf: uf,
             pst: uSec.pst || data.pst || "0,00",
@@ -160,6 +164,18 @@ export async function onRequestGet() {
               partido: leaderConf.partido,
               percentual: leaderRaw.pvap || "0,00",
               color: leaderConf.color
+            }
+          };
+        } else {
+          // Enquanto houver 0 votos, o estado fica neutro sem apontar líder fictício
+          estadosMap[uf] = {
+            uf: uf,
+            pst: uSec.pst || data.pst || "0,00",
+            leader: {
+              shortName: "---",
+              partido: "--",
+              percentual: "0,00",
+              color: "#253456"
             }
           };
         }
