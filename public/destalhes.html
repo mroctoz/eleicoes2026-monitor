@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Central de Apuração 2026 - Painel Analítico Completo</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Google Fonts: Montserrat & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Font Awesome 6 Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- Leaflet CSS & JS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #0b0f19;
+      color: #f3f4f6;
+    }
+    .heading-font {
+      font-family: 'Montserrat', sans-serif;
+    }
+    #mapa-ibge-detalhes {
+      height: 480px;
+      width: 100%;
+      background: #0f172a;
+      border-radius: 0.75rem;
+    }
+    .leaflet-container {
+      background-color: #0f172a !important;
+    }
+    .pulse-dot {
+      animation: pulseAnimation 1.6s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    @keyframes pulseAnimation {
+      0%, 100% { opacity: 1; }
+      50% { opacity: .25; }
+    }
+    .ibge-tooltip {
+      background: rgba(15, 23, 42, 0.96) !important;
+      border: 1px solid #334155 !important;
+      color: #ffffff !important;
+      border-radius: 8px !important;
+      padding: 10px 14px !important;
+      font-size: 13px !important;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6) !important;
+    }
+    .ibge-tooltip:before {
+      border-top-color: #334155 !important;
+    }
+    /* Estilização da barra de rolagem */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0f172a;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #475569;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- Header Superior de Navegação -->
+  <header class="bg-[#111827] border-b border-gray-800 sticky top-0 z-50 shadow-xl backdrop-blur-md bg-opacity-95">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      
+      <div class="flex items-center space-x-3">
+        <div class="bg-blue-600 text-white p-2.5 rounded-xl flex items-center justify-center shadow-lg">
+          <i class="fa-solid fa-chart-line text-lg"></i>
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <h1 class="heading-font text-base sm:text-lg font-black tracking-tight uppercase text-white">Eleições 2026</h1>
+            <span class="bg-red-500/20 text-red-400 text-[11px] px-2.5 py-0.5 rounded-full font-bold border border-red-500/30 flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-red-500 pulse-dot"></span>
+              PAINEL DETALHADO
+            </span>
+          </div>
+          <p class="text-xs text-gray-400">Totalização Oficial Consolidada do TSE & Malhas do IBGE</p>
+        </div>
+      </div>
+
+      <div class="flex items-center space-x-3">
+        <div class="hidden sm:flex flex-col text-right">
+          <span class="text-xs text-gray-400 flex items-center justify-end gap-1">
+            <i class="fa-regular fa-clock text-gray-500"></i> Atualizado às:
+          </span>
+          <span id="label-hora" class="text-xs font-bold text-gray-200">--:--</span>
+        </div>
+
+        <!-- Botão para voltar ao Modo Slide de TV (index.html) -->
+        <a href="/" class="bg-gray-800 hover:bg-gray-700 text-gray-200 text-xs font-semibold py-2 px-3.5 rounded-lg border border-gray-700 transition flex items-center gap-2 shadow">
+          <i class="fa-solid fa-tv text-blue-400"></i>
+          <span>Modo Slide TV</span>
+        </a>
+
+        <button id="btn-refresh" class="bg-blue-600 hover:bg-blue-500 text-white p-2 rounded-lg text-sm transition shadow">
+          <i class="fa-solid fa-arrows-rotate" id="refresh-icon"></i>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- Conteúdo Principal -->
+  <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+    <!-- KPI Metric Cards Grid -->
+    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      
+      <!-- Card 1: Urnas Apuradas -->
+      <div class="bg-[#111827] rounded-xl p-4 border border-gray-800 shadow-lg flex flex-col justify-between">
+        <div class="flex items-center justify-between text-xs text-blue-400 font-semibold uppercase tracking-wider">
+          <span class="flex items-center gap-1.5">
+            <i class="fa-solid fa-box-archive"></i> Urnas Apuradas
+          </span>
+          <span id="kpi-status-badge" class="bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded text-[10px] font-bold">Oficial</span>
+        </div>
+        <div class="my-3">
+          <div class="flex items-baseline space-x-2">
+            <span id="kpi-pst" class="heading-font text-3xl font-black text-white">0,00%</span>
+            <span class="text-xs text-gray-400">totalizadas</span>
+          </div>
+          <div class="text-xs text-gray-400 mt-1" id="kpi-secoes-num">0 de 499.248 seções</div>
+        </div>
+        <div class="w-full bg-gray-800 rounded-full h-1.5 overflow-hidden">
+          <div id="kpi-progress-bar" class="bg-gradient-to-r from-blue-500 to-emerald-400 h-full rounded-full transition-all duration-700" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <!-- Card 2: Votos Válidos Concorrentes -->
+      <div class="bg-[#111827] rounded-xl p-4 border border-gray-800 shadow-lg flex flex-col justify-between">
+        <div class="flex items-center justify-between text-xs text-emerald-400 font-semibold uppercase tracking-wider">
+          <span class="flex items-center gap-1.5">
+            <i class="fa-solid fa-check-double"></i> Votos Válidos
+          </span>
+          <span id="kpi-validos-perc" class="text-xs font-bold text-emerald-400">0,00%</span>
+        </div>
+        <div class="my-3">
+          <span id="kpi-validos" class="heading-font text-3xl font-black text-white">0</span>
+          <p class="text-xs text-gray-400 mt-1">Votos nominais atribuídos aos candidatos</p>
+        </div>
+        <div class="text-[11px] text-gray-500 flex items-center justify-between">
+          <span>Total Geral Computado:</span>
+          <span id="kpi-total-votos" class="text-gray-300 font-bold">0</span>
+        </div>
+      </div>
+
+      <!-- Card 3: Comparecimento e Abstenção -->
+      <div class="bg-[#111827] rounded-xl p-4 border border-gray-800 shadow-lg flex flex-col justify-between">
+        <div class="flex items-center justify-between text-xs text-indigo-400 font-semibold uppercase tracking-wider">
+          <span class="flex items-center gap-1.5">
+            <i class="fa-solid fa-users"></i> Eleitorado & Presença
+          </span>
+          <span id="kpi-eleitorado-total" class="text-[11px] text-gray-400 font-normal">158,7M aptos</span>
+        </div>
+        <div class="my-2 space-y-1">
+          <div class="flex items-center justify-between text-xs">
+            <span class="text-gray-400">Comparecimento:</span>
+            <span id="kpi-comparecimento" class="font-bold text-gray-200">0 (0,00%)</span>
+          </div>
+          <div class="flex items-center justify-between text-xs">
+            <span class="text-gray-400">Abstenções:</span>
+            <span id="kpi-abstencao" class="font-bold text-amber-400">0 (0,00%)</span>
+          </div>
+        </div>
+        <div class="w-full bg-gray-800 rounded-full h-1.5 flex overflow-hidden">
+          <div id="kpi-bar-comp" class="bg-indigo-500 h-full" style="width: 0%"></div>
+          <div id="kpi-bar-abst" class="bg-amber-500 h-full" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <!-- Card 4: Brancos e Nulos -->
+      <div class="bg-[#111827] rounded-xl p-4 border border-gray-800 shadow-lg flex flex-col justify-between">
+        <div class="flex items-center justify-between text-xs text-rose-400 font-semibold uppercase tracking-wider">
+          <span class="flex items-center gap-1.5">
+            <i class="fa-solid fa-ban"></i> Brancos e Nulos
+          </span>
+          <span id="kpi-brancos-nulos-perc" class="text-xs font-bold text-rose-400">0,00%</span>
+        </div>
+        <div class="my-2 space-y-1">
+          <div class="flex items-center justify-between text-xs">
+            <span class="text-gray-400">Brancos:</span>
+            <span id="kpi-brancos" class="font-bold text-gray-200">0 (0,00%)</span>
+          </div>
+          <div class="flex items-center justify-between text-xs">
+            <span class="text-gray-400">Nulos:</span>
+            <span id="kpi-nulos" class="font-bold text-gray-200">0 (0,00%)</span>
+          </div>
+        </div>
+        <div class="text-[11px] text-gray-500">
+          Não computados no cálculo dos votos válidos.
+        </div>
+      </div>
+
+    </section>
+
+    <!-- Palco Principal: Grid 12 Colunas (7 colunas para Mapa e Tabela / 5 colunas para Todos os Candidatos) -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+      <!-- ================= COLUNA ESQUERDA: MAPA DO IBGE E TABELA DE ESTADOS (7 colunas) ================= -->
+      <div class="lg:col-span-7 space-y-6">
+        
+        <!-- Bloco do Mapa Coroplético do IBGE -->
+        <div class="bg-[#111827] rounded-xl p-5 border border-gray-800 shadow-xl space-y-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div>
+              <h2 class="heading-font text-base font-bold text-white flex items-center gap-2">
+                <i class="fa-solid fa-map-location-dot text-blue-400"></i>
+                Votação nos 27 Estados (Malha Oficial IBGE)
+              </h2>
+              <p class="text-xs text-gray-400">Passe o cursor para ver detalhes ou clique para isolar o estado</p>
+            </div>
+
+            <!-- Filtro de Região -->
+            <div class="flex items-center space-x-1 text-xs">
+              <button onclick="filtrarRegiao('TODAS')" class="btn-regiao px-2.5 py-1 rounded bg-blue-600 text-white font-medium">Todos</button>
+              <button onclick="filtrarRegiao('SE')" class="btn-regiao px-2 py-1 rounded bg-gray-800 text-gray-400 hover:text-white font-medium">Sudeste</button>
+              <button onclick="filtrarRegiao('S')" class="btn-regiao px-2 py-1 rounded bg-gray-800 text-gray-400 hover:text-white font-medium">Sul</button>
+              <button onclick="filtrarRegiao('NE')" class="btn-regiao px-2 py-1 rounded bg-gray-800 text-gray-400 hover:text-white font-medium">Nordeste</button>
+              <button onclick="filtrarRegiao('CO')" class="btn-regiao px-2 py-1 rounded bg-gray-800 text-gray-400 hover:text-white font-medium">C.Oeste</button>
+              <button onclick="filtrarRegiao('N')" class="btn-regiao px-2 py-1 rounded bg-gray-800 text-gray-400 hover:text-white font-medium">Norte</button>
+            </div>
+          </div>
+
+          <div class="relative rounded-lg overflow-hidden border border-gray-800">
+            <div id="mapa-ibge-detalhes"></div>
+            
+            <!-- Legenda flutuante sobre o mapa -->
+            <div class="absolute bottom-4 left-4 bg-gray-900/90 backdrop-blur-md border border-gray-700 p-2.5 rounded-lg shadow-xl z-[1000] text-xs space-y-1">
+              <div class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Candidato Líder na UF</div>
+              <div class="flex items-center gap-2 text-gray-300 text-[11px]">
+                <span class="w-3 h-3 rounded-sm bg-[#dc2626]"></span>
+                <span>Lula (PT)</span>
+              </div>
+              <div class="flex items-center gap-2 text-gray-300 text-[11px]">
+                <span class="w-3 h-3 rounded-sm bg-[#2563eb]"></span>
+                <span>Flávio Bolsonaro (PL)</span>
+              </div>
+              <div class="flex items-center gap-2 text-gray-300 text-[11px]">
+                <span class="w-3 h-3 rounded-sm bg-[#0284c7]"></span>
+                <span>Caiado (PSD)</span>
+              </div>
+              <div class="flex items-center gap-2 text-gray-300 text-[11px]">
+                <span class="w-3 h-3 rounded-sm bg-[#ea580c]"></span>
+                <span>Zema (Novo)</span>
+              </div>
+              <div class="flex items-center gap-2 text-gray-300 text-[11px]">
+                <span class="w-3 h-3 rounded-sm bg-[#253456]"></span>
+                <span>Sem apuração inicial</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tabela Comparativa de Todos os Estados -->
+        <div class="bg-[#111827] rounded-xl p-5 border border-gray-800 shadow-xl space-y-3">
+          <div class="flex items-center justify-between">
+            <h3 class="heading-font text-base font-bold text-white flex items-center gap-2">
+              <i class="fa-solid fa-table-list text-emerald-400"></i>
+              Quadro Geral dos 27 Estados
+            </h3>
+            <div class="relative w-48">
+              <input type="text" id="filtro-tabela-uf" placeholder="Buscar estado..." class="w-full bg-gray-900 border border-gray-700 rounded-lg px-2.5 py-1 text-xs text-white focus:outline-none focus:border-blue-500">
+              <i class="fa-solid fa-magnifying-glass absolute right-2.5 top-2 text-gray-500 text-xs"></i>
+            </div>
+          </div>
+
+          <div class="overflow-x-auto max-h-[420px] overflow-y-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-gray-800/80 text-gray-300 sticky top-0 uppercase tracking-wider font-semibold border-b border-gray-700">
+                <tr>
+                  <th class="py-2.5 px-3">UF</th>
+                  <th class="py-2.5 px-3 text-center">Urnas</th>
+                  <th class="py-2.5 px-3">Líder Estadual</th>
+                  <th class="py-2.5 px-3 text-right">Votos 1º</th>
+                  <th class="py-2.5 px-3">2º Colocado</th>
+                  <th class="py-2.5 px-3 text-center">Ação</th>
+                </tr>
+              </thead>
+              <tbody id="tabela-estados-body" class="divide-y divide-gray-800">
+                <tr>
+                  <td colspan="6" class="text-center py-6 text-gray-500">
+                    <i class="fa-solid fa-spinner fa-spin text-lg mb-2"></i><br>
+                    Carregando dados das 27 Unidades Federativas...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ================= COLUNA DIREITA: TODOS OS 13 CANDIDATOS DETALHADOS (5 colunas) ================= -->
+      <div class="lg:col-span-5 space-y-4">
+        
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="heading-font text-base font-bold text-white flex items-center gap-2">
+              <i class="fa-solid fa-users-viewfinder text-yellow-500"></i>
+              Todos os Candidatos Presidenciais (13)
+            </h2>
+            <p class="text-xs text-gray-400">Ordenação por votos apurados no território nacional</p>
+          </div>
+          <span class="text-xs font-semibold bg-gray-800 text-gray-300 px-2 py-1 rounded border border-gray-700">
+            Cargo: Presidente
+          </span>
+        </div>
+
+        <!-- Lista Dinâmica de Todos os 13 Candidatos -->
+        <div id="lista-candidatos-completa" class="space-y-3">
+          <div class="p-8 text-center text-gray-500 bg-[#111827] rounded-xl border border-gray-800">
+            <i class="fa-solid fa-spinner fa-spin text-2xl text-blue-500 mb-2"></i>
+            <p class="text-sm">Sincronizando os 13 candidatos com o TSE...</p>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Gaveta Lateral Modal de Detalhes da UF Clicada -->
+  <aside id="drawer-uf-detalhe" class="fixed inset-y-0 right-0 max-w-lg w-full bg-[#111827] border-l border-gray-800 shadow-2xl transform translate-x-full transition-transform duration-300 ease-in-out z-[2000] flex flex-col">
+    <div class="p-5 border-b border-gray-800 flex items-center justify-between bg-gray-900/60">
+      <div class="flex items-center space-x-3">
+        <div id="drawer-uf-sigla-badge" class="bg-blue-600/20 text-blue-400 w-12 h-12 rounded-xl flex items-center justify-center font-black text-xl border border-blue-500/30">
+          --
+        </div>
+        <div>
+          <h3 id="drawer-uf-nome-completo" class="heading-font font-bold text-lg text-white">Estado Selecionado</h3>
+          <p id="drawer-uf-subtitulo" class="text-xs text-gray-400">Totalização Local de Votos</p>
+        </div>
+      </div>
+      <button onclick="fecharDrawerUf()" class="text-gray-400 hover:text-white p-2 rounded-lg transition">
+        <i class="fa-solid fa-xmark text-xl"></i>
+      </button>
+    </div>
+
+    <!-- Estatísticas da UF selecionada -->
+    <div class="p-5 overflow-y-auto space-y-5 flex-grow">
+      
+      <!-- Metadados da UF -->
+      <div class="grid grid-cols-2 gap-3 text-xs">
+        <div class="bg-gray-800/50 p-3 rounded-lg border border-gray-700/50">
+          <div class="text-gray-400">Urnas Apuradas</div>
+          <div id="drawer-uf-pst" class="text-base font-bold text-white mt-0.5">0,00%</div>
+          <div id="drawer-uf-secoes" class="text-[10px] text-gray-500">0 / 0 seções</div>
+        </div>
+        <div class="bg-gray-800/50 p-3 rounded-lg border border-gray-700/50">
+          <div class="text-gray-400">Eleitorado Apto</div>
+          <div id="drawer-uf-eleitorado" class="text-base font-bold text-white mt-0.5">0</div>
+          <div id="drawer-uf-comp" class="text-[10px] text-gray-500">Comparecimento: 0</div>
+        </div>
+      </div>
+
+      <div>
+        <h4 class="heading-font text-xs font-bold text-gray-300 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+          <i class="fa-solid fa-ranking-star text-yellow-500"></i> Votação dos Candidatos nesta UF
+        </h4>
+        <div id="drawer-uf-candidatos-lista" class="space-y-2">
+          <!-- Candidatos da UF preenchidos via JS -->
+        </div>
+      </div>
+
+    </div>
+  </aside>
+
+  <!-- Rodapé Institucional -->
+  <footer class="bg-[#0b0f19] border-t border-gray-800/80 py-4 mt-8">
+    <div class="max-w-7xl mx-auto px-4 text-center text-xs text-gray-500 flex flex-col sm:flex-row items-center justify-between gap-2">
+      <div>Tribunal Superior Eleitoral (TSE) - Eleições Gerais 2026 (Pleito 3220 / Eleição 6257).</div>
+      <div class="flex items-center gap-3">
+        <a href="/" class="text-blue-400 hover:underline">Voltar ao Slide de TV</a>
+        <span>&bull;</span>
+        <span>Malhas Vetoriais: IBGE 2026</span>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const IBGE_CODES = {
+      11: "RO", 12: "AC", 13: "AM", 14: "RR", 15: "PA", 16: "AP", 17: "TO",
+      21: "MA", 22: "PI", 23: "CE", 24: "RN", 25: "PB", 26: "PE", 27: "AL", 28: "SE", 29: "BA",
+      31: "MG", 32: "ES", 33: "RJ", 35: "SP",
+      41: "PR", 42: "SC", 43: "RS",
+      50: "MS", 51: "MT", 52: "GO", 53: "DF"
+    };
+
+    const UF_NAMES = {
+      "AC": "Acre", "AL": "Alagoas", "AP": "Amapá", "AM": "Amazonas", "BA": "Bahia",
+      "CE": "Ceará", "DF": "Distrito Federal", "ES": "Espírito Santo", "GO": "Goiás",
+      "MA": "Maranhão", "MT": "Mato Grosso", "MS": "Mato Grosso do Sul", "MG": "Minas Gerais",
+      "PA": "Pará", "PB": "Paraíba", "PR": "Paraná", "PE": "Pernambuco", "PI": "Piauí",
+      "RJ": "Rio de Janeiro", "RN": "Rio Grande do Norte", "RS": "Rio Grande do Sul",
+      "RO": "Rondônia", "RR": "Roraima", "SC": "Santa Catarina", "SP": "São Paulo",
+      "SE": "Sergipe", "TO": "Tocantins"
+    };
+
+    const REGIOES = {
+      "SE": ["SP", "RJ", "MG", "ES"],
+      "S": ["RS", "SC", "PR"],
+      "NE": ["BA", "PE", "CE", "MA", "PB", "RN", "AL", "PI", "SE"],
+      "CO": ["DF", "GO", "MT", "MS"],
+      "N": ["AM", "PA", "AC", "RO", "RR", "AP", "TO"]
+    };
+
+    let map = null;
+    let geojsonLayer = null;
+    let fullElectionData = null;
+    let regiaoSelecionada = 'TODAS';
+
+    function initDetailedMap() {
+      map = L.map('mapa-ibge-detalhes', {
+        center: [-14.5, -53.0],
+        zoom: 4,
+        zoomControl: true,
+        attributionControl: false
+      });
+
+      fetch('/api/malha-ibge')
+        .then(res => res.json())
+        .then(geojsonData => {
+          geojsonLayer = L.geoJSON(geojsonData, {
+            style: styleFeature,
+            onEachFeature: onEachFeature
+          }).addTo(map);
+
+          map.fitBounds(geojsonLayer.getBounds(), { padding: [10, 10] });
+        })
+        .catch(err => console.error("Falha ao obter malha do IBGE:", err));
+    }
+
+    function getColorByUf(ufSigla) {
+      if (!fullElectionData || !fullElectionData.estados || !fullElectionData.estados[ufSigla]) {
+        return "#253456";
+      }
+      const st = fullElectionData.estados[ufSigla];
+      return (st.leader && st.leader.color) ? st.leader.color : "#253456";
+    }
+
+    function styleFeature(feature) {
+      const ufCode = feature.properties.codarea;
+      const ufSigla = IBGE_CODES[ufCode];
+
+      let opacity = 0.85;
+      if (regiaoSelecionada !== 'TODAS') {
+        const ufsRegiao = REGIOES[regiaoSelecionada] || [];
+        if (!ufsRegiao.includes(ufSigla)) {
+          opacity = 0.15;
+        }
+      }
+
+      return {
+        fillColor: getColorByUf(ufSigla),
+        weight: 1.5,
+        opacity: 0.8,
+        color: '#1e293b',
+        fillOpacity: opacity
+      };
+    }
+
+    function onEachFeature(feature, layer) {
+      const ufCode = feature.properties.codarea;
+      const ufSigla = IBGE_CODES[ufCode];
+      const ufNome = UF_NAMES[ufSigla] || ufSigla;
+
+      layer.on({
+        mouseover: function(e) {
+          const l = e.target;
+          l.setStyle({ weight: 3, color: '#38bdf8', fillOpacity: 1.0 });
+          l.bringToFront();
+
+          const st = (fullElectionData && fullElectionData.estados) ? fullElectionData.estados[ufSigla] : null;
+          let tip = `<strong>${ufNome} (${ufSigla})</strong><br/>`;
+          if (st && st.leader && st.leader.shortName !== '---') {
+            tip += `Líder: <span style="font-weight:bold; color:${st.leader.color}">${st.leader.shortName} (${st.leader.partido})</span> - ${st.leader.percentual}%<br/>`;
+            tip += `Urnas: ${st.pst}% totalizadas`;
+          } else {
+            tip += "Aguardando totalização oficial";
+          }
+          layer.bindTooltip(tip, { className: 'ibge-tooltip', sticky: true }).openTooltip();
+        },
+        mouseout: function(e) {
+          if (geojsonLayer) geojsonLayer.resetStyle(e.target);
+        },
+        click: function() {
+          abrirDrawerUf(ufSigla);
+        }
+      });
+    }
+
+    function filtrarRegiao(reg) {
+      regiaoSelecionada = reg;
+      document.querySelectorAll('.btn-regiao').forEach(btn => {
+        btn.classList.remove('bg-blue-600', 'text-white');
+        btn.classList.add('bg-gray-800', 'text-gray-400');
+      });
+      event.target.classList.remove('bg-gray-800', 'text-gray-400');
+      event.target.classList.add('bg-blue-600', 'text-white');
+
+      if (geojsonLayer) {
+        geojsonLayer.eachLayer(l => geojsonLayer.resetStyle(l));
+      }
+    }
+
+    function loadCandidatePhoto(imgEl, fileBase) {
+      if (!fileBase) return;
+      const cleanBase = fileBase.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      const candidatesToTry = [
+        `/fotos/${cleanBase}.jpg`,
+        `/fotos/${cleanBase}.jpeg`,
+        `/fotos/${cleanBase}.png`,
+        `/fotos/${cleanBase.toUpperCase()}.jpg`,
+        `/fotos/${cleanBase.toLowerCase()}.jpg`
+      ];
+
+      let attemptIndex = 0;
+      function tryNext() {
+        if (attemptIndex < candidatesToTry.length) {
+          const nextSrc = candidatesToTry[attemptIndex++];
+          const tempImg = new Image();
+          tempImg.onload = () => { imgEl.src = nextSrc; };
+          tempImg.onerror = tryNext;
+          tempImg.src = nextSrc;
+        } else {
+          imgEl.src = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100%" height="100%" fill="%231e293b"/><text x="50%" y="55%" font-family="Montserrat, Arial" font-weight="900" font-size="28" fill="%23ffffff" text-anchor="middle">${cleanBase}</text></svg>`;
+        }
+      }
+      tryNext();
+    }
+
+    async function syncDetailedData() {
+      const icon = document.getElementById('refresh-icon');
+      if (icon) icon.classList.add('fa-spin');
+
+      try {
+        const res = await fetch('/api/eleicoes');
+        const data = await res.json();
+        fullElectionData = data;
+
+        // Metadados Superiores
+        document.getElementById('label-hora').innerText = data.hora || "--:--";
+        document.getElementById('kpi-pst').innerText = `${data.pst || '0,00'}%`;
+        document.getElementById('kpi-status-badge').innerText = data.statusTotalizacao || 'Oficial';
+        document.getElementById('kpi-secoes-num').innerText = `${parseInt(data.secoesTotalizadas || 0).toLocaleString('pt-BR')} de ${parseInt(data.totalSecoes || 499248).toLocaleString('pt-BR')} seções`;
+        
+        const pstFloat = parseFloat((data.pst || '0').replace(',', '.'));
+        document.getElementById('kpi-progress-bar').style.width = `${Math.min(pstFloat, 100)}%`;
+
+        document.getElementById('kpi-validos').innerText = parseInt(data.votosValidos || 0).toLocaleString('pt-BR');
+        document.getElementById('kpi-validos-perc').innerText = `${data.votosValidosPerc || '0,00'}%`;
+        document.getElementById('kpi-total-votos').innerText = parseInt(data.votosTotal || 0).toLocaleString('pt-BR');
+
+        document.getElementById('kpi-eleitorado-total').innerText = `${(parseInt(data.totalEleitores || 158745502)/1000000).toFixed(1).replace('.', ',')}M aptos`;
+        document.getElementById('kpi-comparecimento').innerText = `${parseInt(data.comparecimento || 0).toLocaleString('pt-BR')} (${data.comparecimentoPerc || '0,00'}%)`;
+        document.getElementById('kpi-abstencao').innerText = `${parseInt(data.abstencao || 0).toLocaleString('pt-BR')} (${data.abstencaoPerc || '0,00'}%)`;
+
+        const compF = parseFloat((data.comparecimentoPerc || '0').replace(',', '.'));
+        const abstF = parseFloat((data.abstencaoPerc || '0').replace(',', '.'));
+        document.getElementById('kpi-bar-comp').style.width = `${compF}%`;
+        document.getElementById('kpi-bar-abst').style.width = `${abstF}%`;
+
+        document.getElementById('kpi-brancos').innerText = `${parseInt(data.votosBrancos || 0).toLocaleString('pt-BR')} (${data.votosBrancosPerc || '0,00'}%)`;
+        document.getElementById('kpi-nulos').innerText = `${parseInt(data.votosNulos || 0).toLocaleString('pt-BR')} (${data.votosNulosPerc || '0,00'}%)`;
+        const percSomaBN = (parseFloat((data.votosBrancosPerc || '0').replace(',', '.')) + parseFloat((data.votosNulosPerc || '0').replace(',', '.'))).toFixed(2).replace('.', ',');
+        document.getElementById('kpi-brancos-nulos-perc').innerText = `${percSomaBN}%`;
+
+        // Renderização dos 13 Candidatos
+        renderFullCandidatesList(data.candidatos || []);
+
+        // Renderização da Tabela dos 27 Estados
+        renderStatesTable(data.estados || {});
+
+        // Atualização do mapa do IBGE
+        if (geojsonLayer) {
+          geojsonLayer.eachLayer(l => geojsonLayer.resetStyle(l));
+        }
+
+      } catch (err) {
+        console.error("Falha ao sincronizar painel analítico:", err);
+      } finally {
+        if (icon) setTimeout(() => icon.classList.remove('fa-spin'), 500);
+      }
+    }
+
+    function renderFullCandidatesList(cands) {
+      const container = document.getElementById('lista-candidatos-completa');
+      if (!cands || cands.length === 0) return;
+
+      container.innerHTML = cands.map((c, index) => {
+        const isLeader = index === 0;
+        const isSecond = index === 1;
+        const borderClass = isLeader ? 'border-yellow-500/50 shadow-yellow-500/5' : (isSecond ? 'border-blue-500/40' : 'border-gray-800');
+        const badgeSit = c.st === 'Eleito'
+          ? `<span class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-[10px] font-bold px-2 py-0.5 rounded uppercase">Eleito</span>`
+          : (c.st.includes('2º turno') ? `<span class="bg-blue-500/20 text-blue-400 border border-blue-500/40 text-[10px] font-bold px-2 py-0.5 rounded uppercase">2º Turno</span>` : '');
+
+        const photoId = `cand-img-full-${index}`;
+
+        return `
+          <div class="bg-[#111827] rounded-xl p-4 border ${borderClass} shadow-lg transition hover:border-gray-700 space-y-3">
+            <div class="flex items-start justify-between gap-3">
+              
+              <div class="flex items-center space-x-3.5">
+                <!-- Foto com Badge de Rank -->
+                <div class="relative flex-shrink-0">
+                  <div class="w-14 h-14 rounded-lg bg-gray-800 border border-gray-700 overflow-hidden shadow">
+                    <img id="${photoId}" src="/fotos/${c.fotoArquivo || c.partido}.jpg" alt="${c.nomeUrna}" class="w-full h-full object-cover">
+                  </div>
+                  <div class="absolute -top-2 -left-2 bg-gray-900 border border-gray-700 text-white font-black text-[10px] w-5 h-5 rounded-full flex items-center justify-center">
+                    #${index + 1}
+                  </div>
+                </div>
+
+                <!-- Nomes e Partido -->
+                <div>
+                  <div class="flex items-center space-x-2">
+                    <h3 class="heading-font font-extrabold text-base text-white tracking-tight">${c.nomeUrna}</h3>
+                    <span class="text-xs font-black px-2 py-0.2 rounded text-white shadow-sm" style="background-color: ${c.color}">${c.numero}</span>
+                    ${badgeSit}
+                  </div>
+                  <p class="text-xs text-gray-400 font-medium">${c.nomeCivil !== c.nomeUrna ? c.nomeCivil : c.partido}</p>
+                  
+                  <!-- Dados do Vice-Presidente -->
+                  <div class="text-[11px] text-gray-400 flex items-center gap-1 mt-0.5">
+                    <span class="text-gray-500 font-semibold">Vice:</span>
+                    <span>${c.vice && c.vice.nomeUrna ? c.vice.nomeUrna : 'Não informado'}</span>
+                    ${c.vice && c.vice.partido ? `<span class="text-gray-500">(${c.vice.partido})</span>` : ''}
+                  </div>
+                </div>
+              </div>
+
+              <!-- Percentual e Votos -->
+              <div class="text-right flex-shrink-0">
+                <div class="heading-font text-2xl font-black text-white">${c.pvap}%</div>
+                <div class="text-xs text-gray-400 font-medium">${parseInt(c.vap || 0).toLocaleString('pt-BR')} votos</div>
+              </div>
+
+            </div>
+
+            <!-- Mini Barra de Percentual Proporcional -->
+            <div class="w-full bg-gray-800/90 rounded-full h-2 overflow-hidden">
+              <div class="h-full rounded-full transition-all duration-700" style="width: ${c.pvap.replace(',', '.') }%; background-color: ${c.color}"></div>
+            </div>
+
+            <!-- Coligação em texto pequeno -->
+            <div class="text-[10px] text-gray-500 truncate" title="${c.coligacao}">
+              <i class="fa-solid fa-link text-[9px] mr-1 text-gray-600"></i> ${c.coligacao || c.partido}
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // Aciona o carregador tolerante a falhas para cada imagem da lista
+      cands.forEach((c, index) => {
+        const el = document.getElementById(`cand-img-full-${index}`);
+        if (el) loadCandidatePhoto(el, c.fotoArquivo || c.partido);
+      });
+    }
+
+    function renderStatesTable(estados) {
+      const tbody = document.getElementById('tabela-estados-body');
+      const termoBusca = (document.getElementById('filtro-tabela-uf').value || '').toUpperCase();
+
+      const ufsKeys = Object.keys(estados);
+      if (ufsKeys.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-gray-500">Aguardando início da totalização estadual pelo TSE.</td></tr>`;
+        return;
+      }
+
+      const rows = ufsKeys
+        .filter(uf => {
+          const nomeExtenso = (UF_NAMES[uf] || '').toUpperCase();
+          return uf.includes(termoBusca) || nomeExtenso.includes(termoBusca);
+        })
+        .sort((a, b) => {
+          // Ordena por percentual apurado decrescente
+          const pA = parseFloat((estados[a].pst || '0').replace(',', '.'));
+          const pB = parseFloat((estados[b].pst || '0').replace(',', '.'));
+          return pB - pA;
+        })
+        .map(uf => {
+          const st = estados[uf];
+          const leader = st.leader || { shortName: "---", percentual: "0,00", vap: "0", color: "#475569" };
+          const second = st.second || { shortName: "---", percentual: "0,00" };
+
+          return `
+            <tr class="hover:bg-gray-800/40 transition">
+              <td class="py-2.5 px-3 font-bold text-white">
+                <span class="text-blue-400 font-black">${uf}</span>
+                <span class="text-gray-400 font-normal text-[11px] block sm:inline sm:ml-1">${UF_NAMES[uf] || ''}</span>
+              </td>
+              <td class="py-2.5 px-3 text-center">
+                <span class="bg-gray-800 px-2 py-0.5 rounded text-[11px] font-bold text-gray-200 border border-gray-700">
+                  ${st.pst}%
+                </span>
+              </td>
+              <td class="py-2.5 px-3">
+                <span class="font-bold" style="color: ${leader.color}">
+                  ${leader.shortName}
+                </span>
+                <span class="text-gray-400 text-[11px] ml-1 font-semibold">(${leader.percentual}%)</span>
+              </td>
+              <td class="py-2.5 px-3 text-right font-medium text-gray-300">
+                ${parseInt(leader.vap || 0).toLocaleString('pt-BR')}
+              </td>
+              <td class="py-2.5 px-3 text-gray-400">
+                ${second.shortName} <span class="text-gray-500">(${second.percentual}%)</span>
+              </td>
+              <td class="py-2.5 px-3 text-center">
+                <button onclick="abrirDrawerUf('${uf}')" class="bg-gray-800 hover:bg-blue-600 text-gray-300 hover:text-white px-2.5 py-1 rounded text-[11px] transition">
+                  <i class="fa-solid fa-chart-pie mr-1"></i> Detalhes
+                </button>
+              </td>
+            </tr>
+          `;
+        }).join('');
+
+      tbody.innerHTML = rows || `<tr><td colspan="6" class="text-center py-4 text-gray-500">Nenhum estado localizado com o termo digitado.</td></tr>`;
+    }
+
+    document.getElementById('filtro-tabela-uf').addEventListener('input', () => {
+      if (fullElectionData) renderStatesTable(fullElectionData.estados || {});
+    });
+
+    function abrirDrawerUf(uf) {
+      const drawer = document.getElementById('drawer-uf-detalhe');
+      const st = (fullElectionData && fullElectionData.estados) ? fullElectionData.estados[uf] : null;
+
+      document.getElementById('drawer-uf-sigla-badge').innerText = uf;
+      document.getElementById('drawer-uf-nome-completo').innerText = UF_NAMES[uf] || uf;
+      document.getElementById('drawer-uf-subtitulo').innerText = `Totalização Local Oficial da UF`;
+
+      if (st) {
+        document.getElementById('drawer-uf-pst').innerText = `${st.pst}%`;
+        document.getElementById('drawer-uf-secoes').innerText = `${parseInt(st.secoesTotalizadas || 0).toLocaleString('pt-BR')} de ${parseInt(st.totalSecoes || 0).toLocaleString('pt-BR')} seções`;
+        document.getElementById('drawer-uf-eleitorado').innerText = parseInt(st.eleitorado || 0).toLocaleString('pt-BR');
+        document.getElementById('drawer-uf-comp').innerText = `Comparecimento: ${parseInt(st.comparecimento || 0).toLocaleString('pt-BR')} | Válidos: ${parseInt(st.votosValidos || 0).toLocaleString('pt-BR')}`;
+
+        const candsUf = st.candidatos || [];
+        const listaEl = document.getElementById('drawer-uf-candidatos-lista');
+
+        if (candsUf.length > 0) {
+          listaEl.innerHTML = candsUf.map((c, i) => `
+            <div class="bg-gray-800/40 p-2.5 rounded-lg border border-gray-700/50 flex items-center justify-between text-xs">
+              <div class="flex items-center space-x-2">
+                <span class="font-black text-gray-400 w-4">#${i + 1}</span>
+                <div class="w-2.5 h-6 rounded" style="background-color: ${c.color}"></div>
+                <div>
+                  <div class="font-bold text-white">${c.shortName} <span class="text-gray-400 text-[10px]">(${c.partido})</span></div>
+                  <div class="text-[10px] text-gray-500">${parseInt(c.vap || 0).toLocaleString('pt-BR')} votos</div>
+                </div>
+              </div>
+              <div class="text-right">
+                <span class="text-sm font-black text-white">${c.pvap}%</span>
+              </div>
+            </div>
+          `).join('');
+        } else {
+          listaEl.innerHTML = `<div class="text-xs text-gray-500 py-3 text-center">Nenhum voto computado para esta UF até o momento.</div>`;
+        }
+      }
+
+      drawer.classList.remove('translate-x-full');
+    }
+
+    function fecharDrawerUf() {
+      document.getElementById('drawer-uf-detalhe').classList.add('translate-x-full');
+    }
+
+    document.getElementById('btn-refresh').addEventListener('click', syncDetailedData);
+
+    window.addEventListener('DOMContentLoaded', () => {
+      initDetailedMap();
+      syncDetailedData();
+      setInterval(syncDetailedData, 15000);
+    });
+
+    window.addEventListener('resize', () => {
+      if (map && geojsonLayer) {
+        map.fitBounds(geojsonLayer.getBounds(), { padding: [10, 10] });
+      }
+    });
+  </script>
+</body>
+</html>
