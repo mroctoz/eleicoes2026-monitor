@@ -332,7 +332,11 @@
         return "#253456";
       }
       const st = electionData.estados[ufSigla];
-      return (st.leader && st.leader.color) ? st.leader.color : "#253456";
+      // Só aplica a cor do candidato se ele realmente tiver votos apurados
+      if (!st.leader || st.leader.shortName === '---' || st.leader.percentual === '0,00') {
+        return "#253456"; // Azul escuro neutro de espera
+      }
+      return st.leader.color || "#253456";
     }
 
     function styleFeature(feature) {
@@ -359,11 +363,11 @@
 
           const info = (electionData && electionData.estados) ? electionData.estados[ufSigla] : null;
           let tip = `<strong>${ufSigla}</strong><br/>`;
-          if (info && info.leader && info.leader.shortName && info.leader.shortName !== '---') {
+          if (info && info.leader && info.leader.shortName !== '---' && info.leader.percentual !== '0,00') {
             tip += `Líder: <span style="font-weight:bold; color:${info.leader.color}">${info.leader.shortName}</span> (${info.leader.percentual}%)<br/>`;
             tip += `Urnas Apuradas: ${info.pst}%`;
           } else {
-            tip += "Aguardando totalização oficial";
+            tip += "Aguardando início da apuração oficial";
           }
           layer.bindTooltip(tip, { className: 'ibge-tooltip', sticky: true }).openTooltip();
         },
