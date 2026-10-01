@@ -3,6 +3,12 @@ const TSE_BASE_URL = 'https://resultados.tse.jus.br/oficial';
 const ELEICAO_ID = '6257';
 const ELEICAO_CODE = 'e006257';
 const CARGO_PRESIDENTE = '0001';
+// =========================================================================
+// CHAVE DE FONTE DE DADOS:
+// true  = Lê o arquivo local public/teste-br.json com o parser oficial
+// false = Consulta a CDN oficial do TSE em resultados.tse.jus.br
+// =========================================================================
+const USAR_TESTE_JSON = true;
 
 const ESTADOS = [
   'ac', 'al', 'ap', 'am', 'ba', 'ce', 'df', 'es', 'go', 'ma',
@@ -121,9 +127,22 @@ async function fetchTseScope(scope) {
   }
 }
 
-export async function onRequestGet() {
+export async function onRequestGet(context) {
   try {
-    const brasilData = await fetchTseScope('br');
+    let brasilData = null;
+
+    if (USAR_TESTE_JSON) {
+      // Busca o arquivo teste-br.json publicado no próprio domínio do Cloudflare Pages
+      const baseUrl = new URL(context.request.url).origin;
+      const resLocal = await fetch(`${baseUrl}/teste-br.json`);
+      if (resLocal.ok) {
+        brasilData = await resLocal.json();
+      }
+    } else {
+      // Consulta a CDN oficial do TSE
+      brasilData = await fetchTseScope('br');
+    }
+
     const rawCandidates = extractCandidatesUniversal(brasilData);
 
     const secoes = brasilData && typeof brasilData.s === 'object' ? brasilData.s : {};
@@ -144,41 +163,48 @@ export async function onRequestGet() {
     const estadosMap = {};
 
     ufResponses.forEach(({ uf, data }) => {
-      if (data) {
-        const uCands = extractCandidatesUniversal(data);
-        const uSec = typeof data.s === 'object' ? data.s : {};
-        
-        // Verifica se já existe ao menos 1 voto computado no estado
-        const temVotos = uCands.some(c => parseInt(c.vap || '0', 10) > 0);
+      let uCands = data ? extractCandidatesUniversal(data) : [];
+      const uSec = (data && typeof data.s === 'object') ? data.s : {};
+      
+      // Se estiver no modo de teste com o JSON local, simula a liderança regional para colorir o mapa
+      if (USAR_TESTE_JSON && uCands.length === 0) {
+        const ufsLula = ['BA', 'PE', 'CE', 'MA', 'PB', 'RN', 'AL', 'SE', 'PI', 'PA', 'AP', 'AM'];
+        const lulaLidera = ufsLula.includes(uf);
+        estadosMap[uf] = {
+          uf: uf,
+          pst: "78,40",
+          leader: {
+            shortName: lulaLidera ? "LULA" : "FLAVIO",
+            partido: lulaLidera ? "PT" : "PL",
+            percentual: lulaLidera ? "54,20" : "51,80",
+            color: lulaLidera ? "#dc2626" : "#2563eb"
+          }
+        };
+        return;
+      }
 
-        if (uCands.length > 0 && temVotos) {
-          uCands.sort((a, b) => parseInt(b.vap || '0', 10) - parseInt(a.vap || '0', 10));
-          const leaderRaw = uCands[0];
-          const leaderConf = matchCandidate(leaderRaw);
+      const temVotos = uCands.some(c => parseInt(c.vap || '0', 10) > 0);
+      if (uCands.length > 0 && temVotos) {
+        uCands.sort((a, b) => parseInt(b.vap || '0', 10) - parseInt(a.vap || '0', 10));
+        const leaderRaw = uCands[0];
+        const leaderConf = matchCandidate(leaderRaw);
 
-          estadosMap[uf] = {
-            uf: uf,
-            pst: uSec.pst || data.pst || "0,00",
-            leader: {
-              shortName: leaderConf.shortName,
-              partido: leaderConf.partido,
-              percentual: leaderRaw.pvap || "0,00",
-              color: leaderConf.color
-            }
-          };
-        } else {
-          // Enquanto houver 0 votos, o estado fica neutro sem apontar líder fictício
-          estadosMap[uf] = {
-            uf: uf,
-            pst: uSec.pst || data.pst || "0,00",
-            leader: {
-              shortName: "---",
-              partido: "--",
-              percentual: "0,00",
-              color: "#253456"
-            }
-          };
-        }
+        estadosMap[uf] = {
+          uf: uf,
+          pst: uSec.pst || data.pst || "0,00",
+          leader: {
+            shortName: leaderConf.shortName,
+            partido: leaderConf.partido,
+            percentual: leaderRaw.pvap || "0,00",
+            color: leaderConf.color
+          }
+        };
+      } else {
+        estadosMap[uf] = {
+          uf: uf,
+          pst: uSec.pst || (data && data.pst) || "0,00",
+          leader: { shortName: "---", partido: "--", percentual: "0,00", color: "#253456" }
+        };
       }
     });
 
