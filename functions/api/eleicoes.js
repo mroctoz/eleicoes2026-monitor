@@ -130,17 +130,62 @@ async function fetchTseScope(scope) {
 export async function onRequestGet(context) {
   try {
     let brasilData = null;
+    let estadosMap = {};
 
     if (USAR_TESTE_JSON) {
-      // Busca o arquivo teste-br.json publicado no próprio domínio do Cloudflare Pages
       const baseUrl = new URL(context.request.url).origin;
-      const resLocal = await fetch(`${baseUrl}/teste-br.json`);
-      if (resLocal.ok) {
-        brasilData = await resLocal.json();
+
+      // 1. Carrega dados nacionais de teste
+      const resBr = await fetch(`${baseUrl}/teste-br.json`);
+      if (resBr.ok) {
+        brasilData = await resBr.json();
+      }
+
+      // 2. Carrega o mapa eleitoral simulado das 27 UFs
+      const resMapa = await fetch(`${baseUrl}/teste-mapa.json`);
+      if (resMapa.ok) {
+        estadosMap = await resMapa.json();
       }
     } else {
-      // Consulta a CDN oficial do TSE
+      // Modo Oficial: Consulta a CDN do TSE
       brasilData = await fetchTseScope('br');
+
+      const ufPromises = ESTADOS.map(async (uf) => {
+        const data = await fetchTseScope(uf);
+        return { uf: uf.toUpperCase(), data };
+      });
+      const ufResponses = await Promise.all(ufPromises);
+
+      ufResponses.forEach(({ uf, data }) => {
+        if (data) {
+          const uCands = extractCandidatesUniversal(data);
+          const uSec = typeof data.s === 'object' ? data.s : {};
+          const temVotos = uCands.some(c => parseInt(c.vap || '0', 10) > 0);
+
+          if (uCands.length > 0 && temVotos) {
+            uCands.sort((a, b) => parseInt(b.vap || '0', 10) - parseInt(a.vap || '0', 10));
+            const leaderRaw = uCands[0];
+            const leaderConf = matchCandidate(leaderRaw);
+
+            estadosMap[uf] = {
+              uf: uf,
+              pst: uSec.pst || data.pst || "0,00",
+              leader: {
+                shortName: leaderConf.shortName,
+                partido: leaderConf.partido,
+                percentual: leaderRaw.pvap || "0,00",
+                color: leaderConf.color
+              }
+            };
+          } else {
+            estadosMap[uf] = {
+              uf: uf,
+              pst: uSec.pst || data.pst || "0,00",
+              leader: { shortName: "---", partido: "--", percentual: "0,00", color: "#253456" }
+            };
+          }
+        }
+      });
     }
 
     const rawCandidates = extractCandidatesUniversal(brasilData);
