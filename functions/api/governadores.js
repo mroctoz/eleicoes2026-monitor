@@ -1,4 +1,4 @@
-// functions/api/governadores.js - Backend Oficial para Governadores 2026 (Sintaxe Validada)
+// functions/api/governadores.js - Backend Oficial para Governadores 2026
 const TSE_BASE_URL = 'https://resultados.tse.jus.br/oficial';
 const ELEICAO_ESTADUAL_ID = '6259';
 const ELEICAO_CODE = 'e006259';
