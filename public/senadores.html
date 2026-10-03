@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Senado 2026 - Apuração nos 8 Principais Estados (2 Vagas)</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Google Fonts: Montserrat & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,700;0,800;0,900;1,800;1,900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Font Awesome 6 Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: radial-gradient(circle at 50% 20%, #1e3a5f 0%, #17233e 50%, #251642 100%);
+      color: #ffffff;
+      height: 100vh;
+      width: 100vw;
+    }
+
+    .heading-font {
+      font-family: 'Montserrat', sans-serif;
+    }
+
+    .slide-stage {
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-sizing: border-box;
+      padding: 1.2vh 1.8vw;
+      position: relative;
+    }
+
+    .state-balloon {
+      background: rgba(15, 23, 42, 0.92);
+      border: 1.5px solid rgba(255, 255, 255, 0.14);
+      border-radius: 14px;
+      backdrop-filter: blur(14px);
+      box-shadow: 0 15px 30px -10px rgba(0, 0, 0, 0.7);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 1.2vh 1.1vw;
+      transition: transform 0.2s ease, border-color 0.2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .state-balloon:hover {
+      border-color: rgba(56, 189, 248, 0.5);
+      transform: translateY(-2px);
+    }
+
+    .pulse-dot {
+      animation: pulseAnimation 1.6s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    @keyframes pulseAnimation {
+      0%, 100% { opacity: 1; }
+      50% { opacity: .25; }
+    }
+
+    .screen-control-btn {
+      opacity: 0.35;
+      transition: opacity 0.3s;
+    }
+    .screen-control-btn:hover {
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="slide-stage">
+
+    <!-- Header do Slide -->
+    <header class="flex items-center justify-between h-[5.5vh] min-h-[44px] border-b border-white/10 pb-1.5 px-1">
+      
+      <div class="flex items-center space-x-3">
+        <div class="bg-indigo-600 text-white w-9 h-9 rounded-xl flex items-center justify-center font-black text-sm shadow-md">
+          <i class="fa-solid fa-building-columns"></i>
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <h1 class="heading-font text-base lg:text-xl font-black uppercase tracking-wider text-white">Senado Federal 2026 &bull; 2 Vagas por Estado</h1>
+            <span class="bg-red-500/20 text-red-400 text-[10px] font-bold px-2 py-0.5 rounded-full border border-red-500/30 flex items-center gap-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-red-500 pulse-dot"></span>
+              AO VIVO
+            </span>
+          </div>
+          <p class="text-[11px] text-gray-400 font-medium">Os 2 primeiros são eleitos para mandato de 8 anos &bull; Exibindo os 3 líderes</p>
+        </div>
+      </div>
+
+      <!-- Relógio Central -->
+      <div class="text-center">
+        <div class="flex items-baseline justify-center space-x-2">
+          <span class="text-xs text-gray-400 uppercase font-bold tracking-wider">Brasília:</span>
+          <span id="label-hora" class="heading-font text-2xl lg:text-3xl font-black text-white leading-none">--:--</span>
+        </div>
+        <div class="text-[10px] text-gray-400" id="label-sub-tse-sen">Lote TSE: --:--</div>
+      </div>
+
+      <!-- Navegação Entre Slides -->
+      <div id="painel-controles" class="flex items-center space-x-2 screen-control-btn">
+        <a href="/" class="bg-gray-800 hover:bg-gray-700 text-gray-200 text-xs font-bold py-1.5 px-2.5 rounded-lg border border-gray-700 transition flex items-center gap-1.5">
+          <i class="fa-solid fa-user-tie text-blue-400"></i>
+          <span>Presidente</span>
+        </a>
+
+        <a href="/governadores.html" class="bg-gray-800 hover:bg-gray-700 text-gray-200 text-xs font-bold py-1.5 px-2.5 rounded-lg border border-gray-700 transition flex items-center gap-1.5">
+          <i class="fa-solid fa-landmark text-amber-400"></i>
+          <span>Governadores</span>
+        </a>
+
+        <a href="/detalhes.html" class="bg-gray-800 hover:bg-gray-700 text-gray-200 text-xs font-bold py-1.5 px-2.5 rounded-lg border border-gray-700 transition flex items-center gap-1.5">
+          <i class="fa-solid fa-chart-line text-emerald-400"></i>
+          <span>Painel</span>
+        </a>
+
+        <button id="btn-fullscreen" class="bg-black/50 hover:bg-black/80 text-white p-2 rounded-lg border border-white/20 transition">
+          <i class="fa-solid fa-expand text-xs"></i>
+        </button>
+        <button id="btn-refresh" class="bg-black/50 hover:bg-black/80 text-white p-2 rounded-lg border border-white/20 transition">
+          <i class="fa-solid fa-arrows-rotate text-xs" id="refresh-icon"></i>
+        </button>
+      </div>
+
+    </header>
+
+    <!-- Grid dos 8 Balões com os 3 Primeiros Candidatos -->
+    <main class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-3.5 h-[90vh] py-1">
+      
+      <!-- Template Gerador Dinâmico para os 8 Estados -->
+      <!-- SP, MG, BA, RJ, PR, RS, CE, PE -->
+      <script>
+        const ESTADOS_LIST = [
+          { uf: 'sp', nome: 'São Paulo', cor: 'blue' },
+          { uf: 'mg', nome: 'Minas Gerais', cor: 'red' },
+          { uf: 'ba', nome: 'Bahia', cor: 'red' },
+          { uf: 'rj', nome: 'Rio de Janeiro', cor: 'blue' },
+          { uf: 'pr', nome: 'Paraná', cor: 'emerald' },
+          { uf: 'rs', nome: 'Rio Grande do Sul', cor: 'amber' },
+          { uf: 'ce', nome: 'Ceará', cor: 'cyan' },
+          { uf: 'pe', nome: 'Pernambuco', cor: 'purple' }
+        ];
+
+        document.write(ESTADOS_LIST.map(item => `
+          <div class="state-balloon" id="card-${item.uf}">
+            
+            <!-- Topo do Balão -->
+            <div class="flex items-center justify-between border-b border-white/10 pb-1.5">
+              <div class="flex items-center space-x-2">
+                <span class="heading-font bg-indigo-600 text-white text-[11px] font-black px-2 py-0.5 rounded shadow">${item.uf.toUpperCase()}</span>
+                <span class="heading-font font-black text-sm text-white tracking-wide truncate">${item.nome}</span>
+              </div>
+              <span class="heading-font text-[11px] font-black text-emerald-400 bg-emerald-500/15 border border-emerald-500/30 px-2 py-0.5 rounded" id="pst-${item.uf}">0,00% apurado</span>
+            </div>
+
+            <!-- Corpo com os 3 Candidatos -->
+            <div class="space-y-1.5 my-auto">
+              
+              <!-- 1º Colocado (VAGA 1 ELEITO) -->
+              <div class="bg-white/[0.07] px-2.5 py-1.5 rounded-lg border-l-[4px] border-emerald-500 flex items-center justify-between">
+                <div class="truncate mr-2">
+                  <div class="flex items-center space-x-1.5">
+                    <span class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-[9px] font-black px-1.5 rounded uppercase">VAGA 1</span>
+                    <h3 class="heading-font font-black text-sm text-white truncate uppercase tracking-tight" id="cand1-nome-${item.uf}">Aguardando dados</h3>
+                  </div>
+                  <div class="flex items-center space-x-1.5 mt-0.5">
+                    <span class="text-[10px] font-black text-white bg-indigo-600 px-1 rounded" id="cand1-partido-${item.uf}">--</span>
+                    <span class="text-[10px] text-gray-300 font-medium truncate" id="cand1-votos-${item.uf}">0 votos</span>
+                  </div>
+                </div>
+                <div class="text-right flex-shrink-0">
+                  <span class="heading-font text-2xl lg:text-3xl font-black text-white leading-none tracking-tight block" id="cand1-perc-${item.uf}">0,00%</span>
+                </div>
+              </div>
+
+              <!-- 2º Colocado (VAGA 2 ELEITO) -->
+              <div class="bg-white/[0.06] px-2.5 py-1.5 rounded-lg border-l-[4px] border-emerald-500 flex items-center justify-between">
+                <div class="truncate mr-2">
+                  <div class="flex items-center space-x-1.5">
+                    <span class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-[9px] font-black px-1.5 rounded uppercase">VAGA 2</span>
+                    <h4 class="heading-font font-black text-sm text-gray-100 truncate uppercase tracking-tight" id="cand2-nome-${item.uf}">Aguardando dados</h4>
+                  </div>
+                  <div class="flex items-center space-x-1.5 mt-0.5">
+                    <span class="text-[10px] font-black text-white bg-indigo-700 px-1 rounded" id="cand2-partido-${item.uf}">--</span>
+                    <span class="text-[10px] text-gray-300 font-medium truncate" id="cand2-votos-${item.uf}">0 votos</span>
+                  </div>
+                </div>
+                <div class="text-right flex-shrink-0">
+                  <span class="heading-font text-2xl lg:text-3xl font-black text-gray-100 leading-none tracking-tight block" id="cand2-perc-${item.uf}">0,00%</span>
+                </div>
+              </div>
+
+              <!-- 3º Colocado (3º LUGAR) -->
+              <div class="bg-white/[0.03] px-2.5 py-1.5 rounded-lg border-l-[4px] border-gray-600 flex items-center justify-between">
+                <div class="truncate mr-2">
+                  <div class="flex items-center space-x-1.5">
+                    <span class="bg-gray-700 text-gray-300 text-[9px] font-bold px-1.5 rounded uppercase">3º</span>
+                    <h5 class="heading-font font-extrabold text-xs text-gray-300 truncate uppercase tracking-tight" id="cand3-nome-${item.uf}">Aguardando dados</h5>
+                  </div>
+                  <div class="flex items-center space-x-1.5 mt-0.5">
+                    <span class="text-[10px] font-bold text-gray-300 bg-gray-700 px-1 rounded" id="cand3-partido-${item.uf}">--</span>
+                    <span class="text-[10px] text-gray-400 font-medium truncate" id="cand3-votos-${item.uf}">0 votos</span>
+                  </div>
+                </div>
+                <div class="text-right flex-shrink-0">
+                  <span class="heading-font text-xl lg:text-2xl font-black text-gray-400 leading-none tracking-tight block" id="cand3-perc-${item.uf}">0,00%</span>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Barra de Progresso de Urnas -->
+            <div class="w-full bg-gray-800 rounded-full h-1 overflow-hidden mt-1">
+              <div class="bg-indigo-500 h-full transition-all duration-700" id="bar-${item.uf}" style="width: 0%"></div>
+            </div>
+
+          </div>
+        `).join(''));
+      </script>
+
+    </main>
+
+  </div>
+
+  <script>
+    function tickLiveClock() {
+      const now = new Date();
+      const horaStr = now.toLocaleTimeString('pt-BR', {
+        timeZone: 'America/Sao_Paulo',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+      const elHora = document.getElementById('label-hora');
+      if (elHora) elHora.innerText = horaStr;
+    }
+    setInterval(tickLiveClock, 1000);
+    tickLiveClock();
+
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('obs') === 'true' || urlParams.get('clean') === 'true') {
+      const controles = document.getElementById('painel-controles');
+      if (controles) controles.style.display = 'none';
+    }
+
+    async function syncSenadoresData() {
+      const icon = document.getElementById('refresh-icon');
+      if (icon) icon.classList.add('fa-spin');
+
+      try {
+        const res = await fetch('/api/senadores');
+        const data = await res.json();
+
+        const subTse = document.getElementById('label-sub-tse-sen');
+        if (subTse && data.hora) {
+          subTse.innerText = `Lote TSE: ${data.hora} ${data.dataGeracao ? `(${data.dataGeracao})` : ''}`;
+        }
+
+        const baloes = data.baloes || [];
+        baloes.forEach(b => {
+          const uf = b.uf.toLowerCase();
+
+          const elPst = document.getElementById(`pst-${uf}`);
+          if (elPst) elPst.innerText = `${b.pst}% apurado`;
+
+          const elBar = document.getElementById(`bar-${uf}`);
+          if (elBar) {
+            const numPst = parseFloat((b.pst || '0').replace(',', '.'));
+            elBar.style.width = `${Math.min(numPst, 100)}%`;
+          }
+
+          // 1º Colocado
+          if (b.cand1) {
+            const el1Nome = document.getElementById(`cand1-nome-${uf}`);
+            const el1Part = document.getElementById(`cand1-partido-${uf}`);
+            const el1Perc = document.getElementById(`cand1-perc-${uf}`);
+            const el1Vots = document.getElementById(`cand1-votos-${uf}`);
+            if (el1Nome) el1Nome.innerText = b.cand1.nomeUrna;
+            if (el1Part) el1Part.innerText = b.cand1.partido;
+            if (el1Perc) el1Perc.innerText = `${b.cand1.pvap}%`;
+            if (el1Vots) el1Vots.innerText = `${parseInt(b.cand1.vap || 0).toLocaleString('pt-BR')} votos`;
+          }
+
+          // 2º Colocado
+          if (b.cand2) {
+            const el2Nome = document.getElementById(`cand2-nome-${uf}`);
+            const el2Part = document.getElementById(`cand2-partido-${uf}`);
+            const el2Perc = document.getElementById(`cand2-perc-${uf}`);
+            const el2Vots = document.getElementById(`cand2-votos-${uf}`);
+            if (el2Nome) el2Nome.innerText = b.cand2.nomeUrna;
+            if (el2Part) el2Part.innerText = b.cand2.partido;
+            if (el2Perc) el2Perc.innerText = `${b.cand2.pvap}%`;
+            if (el2Vots) el2Vots.innerText = `${parseInt(b.cand2.vap || 0).toLocaleString('pt-BR')} votos`;
+          }
+
+          // 3º Colocado
+          if (b.cand3) {
+            const el3Nome = document.getElementById(`cand3-nome-${uf}`);
+            const el3Part = document.getElementById(`cand3-partido-${uf}`);
+            const el3Perc = document.getElementById(`cand3-perc-${uf}`);
+            const el3Vots = document.getElementById(`cand3-votos-${uf}`);
+            if (el3Nome) el3Nome.innerText = b.cand3.nomeUrna;
+            if (el3Part) el3Part.innerText = b.cand3.partido;
+            if (el3Perc) el3Perc.innerText = `${b.cand3.pvap}%`;
+            if (el3Vots) el3Vots.innerText = `${parseInt(b.cand3.vap || 0).toLocaleString('pt-BR')} votos`;
+          }
+        });
+
+      } catch (err) {
+        console.error("Falha ao sincronizar senadores:", err);
+      } finally {
+        if (icon) setTimeout(() => icon.classList.remove('fa-spin'), 500);
+      }
+    }
+
+    const btnFull = document.getElementById('btn-fullscreen');
+    if (btnFull) {
+      btnFull.addEventListener('click', () => {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen().catch(e => console.log(e));
+        } else {
+          if (document.exitFullscreen) document.exitFullscreen();
+        }
+      });
+    }
+
+    const btnRef = document.getElementById('btn-refresh');
+    if (btnRef) {
+      btnRef.addEventListener('click', syncSenadoresData);
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      syncSenadoresData();
+      setInterval(syncSenadoresData, 15000);
+    });
+  </script>
+</body>
+</html>
