@@ -232,34 +232,23 @@ export async function onRequestGet() {
         rawCandidates.sort((a, b) => parseInt(b.vap || '0', 10) - parseInt(a.vap || '0', 10));
       }
 
+      // Trecho de functions/api/governadores.js (bloco de retorno de cada balão)
       const cand1 = rawCandidates[0] || {
-        nomeUrna: "SEM DADOS",
-        partido: "--",
-        numero: "--",
-        vap: "0",
-        pvap: "0,00",
-        color: "#334155",
-        st: "Aguardando",
-        vice: { nomeUrna: "--", partido: "" }
+        nomeUrna: "SEM DADOS", partido: "--", numero: "--", vap: "0", pvap: "0,00", color: "#334155", st: "Aguardando"
       };
 
       const cand2 = rawCandidates[1] || {
-        nomeUrna: "SEM DADOS",
-        partido: "--",
-        numero: "--",
-        vap: "0",
-        pvap: "0,00",
-        color: "#334155",
-        st: "Aguardando",
-        vice: { nomeUrna: "--", partido: "" }
+        nomeUrna: "SEM DADOS", partido: "--", numero: "--", vap: "0", pvap: "0,00", color: "#334155", st: "Aguardando"
       };
 
-      // Cálculo de margem de vitória entre os dois líderes
+      const cand3 = rawCandidates[2] || {
+        nomeUrna: "SEM DADOS", partido: "--", numero: "--", vap: "0", pvap: "0,00", color: "#334155", st: "Aguardando"
+      };
+
       const p1 = parseFloat(cand1.pvap.replace(',', '.'));
       const p2 = parseFloat(cand2.pvap.replace(',', '.'));
       const diferenca = Math.abs(p1 - p2).toFixed(2).replace('.', ',');
 
-      // Determinação da situação política do estado
       let situacaoUf = "Em apuração";
       if (cand1.st === 'Eleito' || (p1 > 50.0 && pst === '100,00')) {
         situacaoUf = "Eleito em 1º Turno";
@@ -277,9 +266,9 @@ export async function onRequestGet() {
         statusTotalizacao: situacaoUf,
         diferenca: diferenca,
         cand1: cand1,
-        cand2: cand2
+        cand2: cand2,
+        cand3: cand3
       };
-    });
 
     if (!horaGeral) {
       horaGeral = new Date().toLocaleTimeString('pt-BR', {
