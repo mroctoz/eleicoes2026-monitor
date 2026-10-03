@@ -1,4 +1,4 @@
-// functions/api/governadores.js - Backend Oficial Robusto para Governadores 2026
+// functions/api/governadores.js - Backend Oficial para Governadores 2026 (Sintaxe Validada)
 const TSE_BASE_URL = 'https://resultados.tse.jus.br/oficial';
 const ELEICAO_ESTADUAL_ID = '6259';
 const ELEICAO_CODE = 'e006259';
@@ -16,28 +16,32 @@ const ESTADOS_TOP8 = [
   { uf: 'pe', nome: 'Pernambuco', regiao: 'Nordeste' }
 ];
 
-// Paleta oficial de cores partidárias
 const CORES_PARTIDOS = {
   '10': '#0d9488', // REPUBLICANOS
+  '11': '#0284c7', // PP
+  '12': '#ca8a04', // PDT
   '13': '#dc2626', // PT
-  '22': '#2563eb', // PL
-  '55': '#0284c7', // PSD
+  '14': '#d97706', // MISSÃO
   '15': '#16a34a', // MDB
+  '16': '#b91c1c', // PSTU
+  '18': '#059669', // REDE
+  '20': '#10b981', // PODEMOS
+  '21': '#991b1b', // PCB
+  '22': '#2563eb', // PL
+  '23': '#ec4899', // CIDADANIA
+  '27': '#0891b2', // DC
+  '28': '#ca8a04', // PRTB
+  '29': '#7f1d1d', // PCO
+  '30': '#ea580c', // NOVO
+  '35': '#1d4ed8', // DEMOCRATA
+  '36': '#0284c7', // AGIR
+  '40': '#d97706', // PSB
   '44': '#4338ca', // UNIÃO BRASIL
   '45': '#0284c7', // PSDB
-  '30': '#ea580c', // NOVO
-  '40': '#d97706', // PSB
-  '12': '#ca8a04', // PDT
-  '11': '#0284c7', // PP
-  '20': '#10b981', // PODEMOS
+  '50': '#9333ea', // PSOL
+  '55': '#0284c7', // PSD
   '70': '#059669', // AVANTE
-  '14': '#d97706', // MISSÃO
   '80': '#e11d48', // UP
-  '16': '#b91c1c', // PSTU
-  '21': '#991b1b', // PCB
-  '29': '#7f1d1d', // PCO
-  '28': '#ca8a04', // PRTB
-  '27': '#0891b2', // DC
   'DEFAULT': '#475569'
 };
 
@@ -61,25 +65,23 @@ function getPartyColor(partyNumber, sigla) {
   return CORES_PARTIDOS['DEFAULT'];
 }
 
-// Extrator universal que analisa a estrutura do arquivo estadual de governador
 function extractCandidatesGov(tseData) {
   const candidates = [];
   if (!tseData) return candidates;
 
   if (tseData.carg && Array.isArray(tseData.carg) && tseData.carg.length > 0) {
-    // Localiza o cargo de Governador (cd: "3")
     const cargo = tseData.carg.find(c => String(c.cd) === '3') || tseData.carg[0];
-    
+
     if (cargo && cargo.agr && Array.isArray(cargo.agr)) {
       for (const agr of cargo.agr) {
         const coligacao = agr.com || agr.nm || '';
         const coligacaoNome = agr.nm || '';
-        
+
         if (agr.par && Array.isArray(agr.par)) {
           for (const par of agr.par) {
             const sg = par.sg || '';
             const partidoNome = par.nm || '';
-            
+
             if (par.cand && Array.isArray(par.cand)) {
               for (const c of par.cand) {
                 const vices = [];
@@ -142,7 +144,6 @@ function extractCandidatesGov(tseData) {
   return candidates;
 }
 
-// Busca segura para o arquivo estadual do cargo de governador
 async function fetchGovState(uf) {
   const ufLower = uf.toLowerCase();
   const url = `${TSE_BASE_URL}/ele2026/${ELEICAO_ESTADUAL_ID}/dados/${ufLower}/${ufLower}-c${CARGO_GOVERNADOR}-${ELEICAO_CODE}-u.json`;
@@ -154,7 +155,7 @@ async function fetchGovState(uf) {
         'Accept': 'application/json, text/plain, */*'
       },
       cf: {
-        cacheTtl: 15, // Cache de 15 segundos na borda da Cloudflare
+        cacheTtl: 15,
         cacheEverything: true
       }
     });
@@ -168,7 +169,6 @@ async function fetchGovState(uf) {
 
 export async function onRequestGet() {
   try {
-    // Consulta paralela dos 8 estados monitorados
     const promises = ESTADOS_TOP8.map(async (item) => {
       const data = await fetchGovState(item.uf);
       return { item, data };
@@ -182,7 +182,6 @@ export async function onRequestGet() {
     const baloes = responses.map(({ item, data }) => {
       const ufUpper = item.uf.toUpperCase();
 
-      // Fallback seguro caso o arquivo estadual ainda não tenha sido publicado pelo TSE
       if (!data) {
         return {
           uf: ufUpper,
@@ -212,6 +211,16 @@ export async function onRequestGet() {
             color: "#334155",
             st: "Em apuração",
             vice: { nomeUrna: "--", partido: "" }
+          },
+          cand3: {
+            nomeUrna: "AGUARDANDO DADOS",
+            partido: "--",
+            numero: "--",
+            vap: "0",
+            pvap: "0,00",
+            color: "#334155",
+            st: "Em apuração",
+            vice: { nomeUrna: "--", partido: "" }
           }
         };
       }
@@ -227,22 +236,41 @@ export async function onRequestGet() {
       const rawCandidates = extractCandidatesGov(data);
       const temVotos = rawCandidates.some(c => parseInt(c.vap || '0', 10) > 0);
 
-      // Se houver votos, ordena estritamente por votos apurados válidos
       if (temVotos) {
         rawCandidates.sort((a, b) => parseInt(b.vap || '0', 10) - parseInt(a.vap || '0', 10));
       }
 
-      // Trecho de functions/api/governadores.js (bloco de retorno de cada balão)
       const cand1 = rawCandidates[0] || {
-        nomeUrna: "SEM DADOS", partido: "--", numero: "--", vap: "0", pvap: "0,00", color: "#334155", st: "Aguardando"
+        nomeUrna: "SEM DADOS",
+        partido: "--",
+        numero: "--",
+        vap: "0",
+        pvap: "0,00",
+        color: "#334155",
+        st: "Aguardando",
+        vice: { nomeUrna: "--", partido: "" }
       };
 
       const cand2 = rawCandidates[1] || {
-        nomeUrna: "SEM DADOS", partido: "--", numero: "--", vap: "0", pvap: "0,00", color: "#334155", st: "Aguardando"
+        nomeUrna: "SEM DADOS",
+        partido: "--",
+        numero: "--",
+        vap: "0",
+        pvap: "0,00",
+        color: "#334155",
+        st: "Aguardando",
+        vice: { nomeUrna: "--", partido: "" }
       };
 
       const cand3 = rawCandidates[2] || {
-        nomeUrna: "SEM DADOS", partido: "--", numero: "--", vap: "0", pvap: "0,00", color: "#334155", st: "Aguardando"
+        nomeUrna: "SEM DADOS",
+        partido: "--",
+        numero: "--",
+        vap: "0",
+        pvap: "0,00",
+        color: "#334155",
+        st: "Aguardando",
+        vice: { nomeUrna: "--", partido: "" }
       };
 
       const p1 = parseFloat(cand1.pvap.replace(',', '.'));
@@ -269,6 +297,7 @@ export async function onRequestGet() {
         cand2: cand2,
         cand3: cand3
       };
+    });
 
     if (!horaGeral) {
       horaGeral = new Date().toLocaleTimeString('pt-BR', {
