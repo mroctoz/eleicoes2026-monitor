@@ -4,6 +4,7 @@ const ELEICAO_ESTADUAL_ID = '6259';
 const ELEICAO_CODE = 'e006259';
 const CARGO_SENADOR = '0005';
 
+// Os 8 maiores colégios eleitorais do Brasil
 const ESTADOS_TOP8 = [
   { uf: 'sp', nome: 'São Paulo', regiao: 'Sudeste' },
   { uf: 'mg', nome: 'Minas Gerais', regiao: 'Sudeste' },
@@ -18,6 +19,7 @@ const ESTADOS_TOP8 = [
 const CORES_PARTIDOS = {
   '10': '#0d9488', // REPUBLICANOS
   '11': '#0284c7', // PP
+  '12': '#ca8a04', // PDT
   '13': '#dc2626', // PT
   '14': '#d97706', // MISSÃO
   '15': '#16a34a', // MDB
@@ -117,6 +119,26 @@ function extractCandidatesSenado(tseData) {
         }
       }
     }
+  } else if (tseData.cand && Array.isArray(tseData.cand)) {
+    for (const c of tseData.cand) {
+      candidates.push({
+        numero: String(c.n || '').trim(),
+        sqcand: '',
+        nomeCivil: c.nm || '',
+        nomeUrna: c.nmu || c.nm || 'CANDIDATO',
+        partido: (c.cc || '').split(' ')[0] || '',
+        partidoNome: '',
+        coligacao: c.cc || '',
+        coligacaoNome: '',
+        dtNasc: '',
+        seq: '',
+        vap: String(c.vap || '0'),
+        pvap: String(c.pvap || '0,00'),
+        st: c.st || '',
+        color: getPartyColor(c.n, (c.cc || '').split(' ')[0]),
+        suplentes: []
+      });
+    }
   }
 
   return candidates;
@@ -129,7 +151,7 @@ async function fetchSenadoState(uf) {
   try {
     const res = await fetch(url, {
       headers: {
-        'User-Agent': 'MonitorSenado2026/CloudflareEdge',
+        'User-Agent': 'CentralApuracaoSenado2026/CloudflareEdge',
         'Accept': 'application/json, text/plain, */*'
       },
       cf: {
