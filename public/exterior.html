@@ -5,57 +5,66 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Totalização Exterior – Eleições 2026</title>
   <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-      background: #f5f7fa;
-      margin: 0;
-      padding: 2rem;
+      background: #f0f2f5;
+      padding: 2rem 1rem;
       display: flex;
-      flex-direction: column;
-      align-items: center;
+      justify-content: center;
       min-height: 100vh;
     }
     .container {
-      max-width: 800px;
+      max-width: 900px;
       width: 100%;
       background: #fff;
-      border-radius: 16px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
       padding: 2rem;
     }
     h1 {
-      font-size: 1.8rem;
-      margin-top: 0;
+      font-size: 1.9rem;
       color: #1a1a2e;
       text-align: center;
+      margin-bottom: 0.3rem;
     }
     .subtitle {
       text-align: center;
-      color: #555;
-      margin-bottom: 1.5rem;
+      color: #6c757d;
       font-size: 0.95rem;
+      margin-bottom: 1.8rem;
     }
-    .status {
+    .controls {
       display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 1.5rem;
       flex-wrap: wrap;
-      gap: 0.5rem;
+      gap: 1rem;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1.8rem;
     }
-    .status span {
+    .controls label {
       font-size: 0.9rem;
-      color: #333;
+      color: #495057;
+    }
+    select, button {
+      padding: 0.6rem 1.2rem;
+      border-radius: 10px;
+      border: 1px solid #ced4da;
+      font-size: 0.95rem;
+      background: #fff;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    select:focus, button:focus {
+      outline: none;
+      border-color: #0d6efd;
+      box-shadow: 0 0 0 3px rgba(13,110,253,0.15);
     }
     button {
       background: #0d6efd;
       color: #fff;
       border: none;
-      padding: 0.6rem 1.2rem;
-      border-radius: 8px;
-      font-size: 0.95rem;
-      cursor: pointer;
-      transition: background 0.2s;
+      font-weight: 600;
     }
     button:hover {
       background: #0b5ed7;
@@ -64,216 +73,261 @@
       background: #6c8ebf;
       cursor: not-allowed;
     }
+    .status-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      font-size: 0.85rem;
+      color: #495057;
+      margin-bottom: 1rem;
+      padding-bottom: 0.8rem;
+      border-bottom: 1px solid #e9ecef;
+    }
+    .status-bar span { display: flex; align-items: center; gap: 0.3rem; }
+    .loading {
+      text-align: center;
+      padding: 2.5rem;
+      color: #6c757d;
+      font-size: 1rem;
+    }
+    .loading::after {
+      content: '';
+      display: inline-block;
+      width: 1.2em;
+      height: 1.2em;
+      margin-left: 0.5em;
+      border: 2px solid #0d6efd;
+      border-right-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      vertical-align: middle;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .erro-box {
+      background: #fff3cd;
+      border: 1px solid #ffc107;
+      border-radius: 10px;
+      padding: 1.2rem;
+      text-align: center;
+      color: #856404;
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+    .erro-box strong { display: block; margin-bottom: 0.3rem; }
     .candidato {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 0.8rem 1rem;
-      border-bottom: 1px solid #e9ecef;
+      padding: 0.9rem 1rem;
+      border-bottom: 1px solid #f1f3f5;
+      transition: background 0.1s;
     }
-    .candidato:last-child {
-      border-bottom: none;
-    }
-    .candidato .nome {
-      font-weight: 600;
-      color: #1a1a2e;
-    }
-    .candidato .partido {
-      font-size: 0.85rem;
-      color: #6c757d;
-      margin-left: 0.5rem;
-    }
-    .candidato .votos {
-      font-weight: 700;
-      color: #0d6efd;
-    }
-    .candidato .percentual {
-      font-size: 0.9rem;
-      color: #495057;
-      margin-left: 0.5rem;
-    }
-    .total {
-      margin-top: 1.5rem;
-      padding-top: 1rem;
-      border-top: 2px solid #dee2e6;
+    .candidato:hover { background: #f8f9fa; }
+    .candidato:last-child { border-bottom: none; }
+    .candidato .info { display: flex; flex-direction: column; gap: 0.15rem; }
+    .candidato .nome { font-weight: 700; color: #1a1a2e; font-size: 1rem; }
+    .candidato .partido { font-size: 0.8rem; color: #6c757d; }
+    .candidato .votos { font-weight: 700; color: #0d6efd; font-size: 1.05rem; text-align: right; }
+    .candidato .percentual { font-size: 0.85rem; color: #495057; text-align: right; }
+    .total-geral {
       display: flex;
       justify-content: space-between;
-      font-size: 1rem;
-      font-weight: 600;
+      align-items: center;
+      margin-top: 1.2rem;
+      padding-top: 1.2rem;
+      border-top: 2px solid #dee2e6;
+      font-size: 1.1rem;
+      font-weight: 700;
       color: #1a1a2e;
     }
-    .erro {
-      color: #dc3545;
-      text-align: center;
-      margin-top: 1rem;
-    }
-    .loading {
-      text-align: center;
-      color: #6c757d;
-      margin-top: 1rem;
-    }
+    .total-geral .valor { color: #0d6efd; font-size: 1.3rem; }
     .footer {
-      margin-top: 1.5rem;
-      font-size: 0.8rem;
-      color: #868e96;
+      margin-top: 1.8rem;
+      font-size: 0.78rem;
+      color: #adb5bd;
       text-align: center;
+      line-height: 1.5;
     }
-    .footer a {
+    .footer a { color: #0d6efd; text-decoration: none; }
+    .badge {
+      display: inline-block;
+      background: #e7f1ff;
       color: #0d6efd;
-      text-decoration: none;
+      border-radius: 20px;
+      padding: 0.15rem 0.7rem;
+      font-size: 0.75rem;
+      font-weight: 600;
     }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>Totalização no Exterior</h1>
-    <p class="subtitle">Eleições 2026 – Presidente (1º turno) – Votos no exterior</p>
+    <p class="subtitle">Eleições 2026 · Votos de brasileiros no exterior (ZZ)</p>
 
-    <div class="status">
-      <span id="ultimaAtualizacao">Aguardando…</span>
-      <button id="btnAtualizar">Atualizar</button>
+    <div class="controls">
+      <label for="turno">Turno:</label>
+      <select id="turno">
+        <option value="1">1º turno</option>
+        <option value="2">2º turno</option>
+      </select>
+      <button id="btnAtualizar">🔄 Atualizar dados</button>
+    </div>
+
+    <div class="status-bar">
+      <span>📅 Arquivo gerado: <strong id="timestampArquivo">—</strong></span>
+      <span>🕐 Última consulta: <strong id="ultimaConsulta">—</strong></span>
     </div>
 
     <div id="resultado"></div>
-    <div id="erro" class="erro"></div>
-    <div id="loading" class="loading">Carregando dados…</div>
-
-    <div class="total" id="totalGeral" style="display:none;">
-      <span>Total de votos válidos</span>
-      <span id="totalVotos">0</span>
-    </div>
 
     <div class="footer">
-      Dados oficiais do TSE – <a href="https://resultados.tse.jus.br" target="_blank">resultados.tse.jus.br</a><br>
-      Última atualização do arquivo: <span id="timestampArquivo">—</span>
+      Fonte oficial: <a href="https://resultados.tse.jus.br" target="_blank" rel="noopener">resultados.tse.jus.br</a> · TSE<br>
+      Os dados do exterior são publicados após o fechamento das urnas no Brasil (17h, horário de Brasília).
     </div>
   </div>
 
   <script>
-    // Configuração: código da eleição para presidente (1º turno) em 2026.
-    // Altere conforme necessário (ex.: 545 para 2º turno, 546 para outros cargos).
-    const ELEICAO = '544';
-    const URL_BASE = `https://resultados.tse.jus.br/oficial/ele2026/${ELEICAO}/dados-simplificados/zz/zz-c0001-e000${ELEICAO}-r.json`;
+    // ---------------------------------------------------------------
+    // Configuração: possíveis códigos de eleição para presidente.
+    // O TSE usa 544 para presidente no 1º turno desde 2018.
+    // Para 2026, mantemos 544, 545 e 546 como fallback.
+    // O sufixo pode ser "-u.json" (unificado, padrão EA20)
+    // ou "-r.json" (formato legado, usado até 2022).
+    // ---------------------------------------------------------------
+    const CODIGOS_ELEICAO = ['544', '545', '546'];
+    const SUFIXOS = ['-u.json', '-r.json'];
+    const BASE = 'https://resultados.tse.jus.br/oficial/ele2026';
 
+    // Elementos
     const resultadoDiv = document.getElementById('resultado');
-    const erroDiv = document.getElementById('erro');
-    const loadingDiv = document.getElementById('loading');
-    const btnAtualizar = document.getElementById('btnAtualizar');
-    const ultimaAtualizacaoSpan = document.getElementById('ultimaAtualizacao');
-    const totalGeralDiv = document.getElementById('totalGeral');
-    const totalVotosSpan = document.getElementById('totalVotos');
     const timestampArquivoSpan = document.getElementById('timestampArquivo');
+    const ultimaConsultaSpan = document.getElementById('ultimaConsulta');
+    const btnAtualizar = document.getElementById('btnAtualizar');
+    const turnoSelect = document.getElementById('turno');
 
-    let dadosAtuais = null;
+    // Formata números
+    const fmtNum = n => n.toLocaleString('pt-BR');
+    const fmtPct = p => p.toFixed(2).replace('.', ',') + '%';
 
-    // Formata números com separador de milhar.
-    function formatarNumero(n) {
-      return n.toLocaleString('pt-BR');
+    // Constrói a lista de URLs a tentar.
+    // Para o 2º turno, o código pode ser o mesmo ou 545.
+    function construirUrls() {
+      const turno = turnoSelect.value;
+      const urls = [];
+
+      // No 2º turno, o TSE costuma usar o código 545 (2022) ou manter 544.
+      // Tentamos primeiro o código mais provável para o turno.
+      let codigos = turno === '2' ? ['545', '544'] : ['544', '545', '546'];
+
+      codigos.forEach(cod => {
+        SUFIXOS.forEach(suf => {
+          // Abrangência ZZ (exterior), cargo 0001 (presidente)
+          urls.push(`${BASE}/${cod}/dados-simplificados/zz/zz-c0001-e000${cod}${suf}`);
+        });
+      });
+
+      return urls;
     }
 
-    // Formata percentual com duas casas decimais.
-    function formatarPercentual(p) {
-      return p.toFixed(2).replace('.', ',') + '%';
-    }
+    // Busca os dados tentando cada URL em sequência.
+    async function carregarDados() {
+      resultadoDiv.innerHTML = '<div class="loading">Consultando a totalização do exterior…</div>';
+      btnAtualizar.disabled = true;
+      timestampArquivoSpan.textContent = '—';
 
-    // Renderiza a lista de candidatos e totais.
-    function renderizar(dados) {
-      resultadoDiv.innerHTML = '';
-      erroDiv.textContent = '';
-      loadingDiv.style.display = 'none';
+      const urls = construirUrls();
+      let dados = null;
+      let ultimoErro = null;
 
-      if (!dados || !dados.cargos || dados.cargos.length === 0) {
-        erroDiv.textContent = 'Nenhum dado de cargo encontrado.';
+      for (const url of urls) {
+        try {
+          const resp = await fetch(url + '?t=' + Date.now());
+          if (!resp.ok) {
+            ultimoErro = `HTTP ${resp.status} em ${url.split('/').pop()}`;
+            continue;
+          }
+          const json = await resp.json();
+          // Verifica se o JSON tem a estrutura esperada (cargos com candidatos)
+          if (json.cargos && json.cargos.length > 0) {
+            dados = json;
+            break;
+          }
+        } catch (e) {
+          ultimoErro = e.message;
+        }
+      }
+
+      btnAtualizar.disabled = false;
+
+      if (!dados) {
+        // Nenhuma URL funcionou – provavelmente os dados ainda não foram publicados.
+        resultadoDiv.innerHTML = `
+          <div class="erro-box">
+            <strong>⏳ Totalização do exterior ainda não disponível</strong>
+            O TSE publica os resultados do exterior somente após o fechamento das urnas no Brasil (17h, horário de Brasília).<br>
+            <span style="font-size:0.8rem; color:#856404;">Último erro: ${ultimoErro || 'nenhuma URL respondeu'}</span>
+          </div>`;
+        ultimaConsultaSpan.textContent = new Date().toLocaleTimeString('pt-BR');
         return;
       }
 
-      // Considera apenas o primeiro cargo (presidente).
+      renderizar(dados);
+    }
+
+    // Renderiza os candidatos e totais.
+    function renderizar(dados) {
+      resultadoDiv.innerHTML = '';
       const cargo = dados.cargos[0];
       const candidatos = cargo.candidatos || [];
-
-      // Ordena por votos decrescentes.
       const ordenados = [...candidatos].sort((a, b) => (b.votos || 0) - (a.votos || 0));
-
-      // Calcula total de votos válidos (soma dos votos dos candidatos).
       const totalVotos = ordenados.reduce((acc, c) => acc + (c.votos || 0), 0);
 
       ordenados.forEach(c => {
         const div = document.createElement('div');
         div.className = 'candidato';
 
-        const nomeSpan = document.createElement('span');
-        nomeSpan.className = 'nome';
-        nomeSpan.textContent = c.nome || '—';
+        const info = document.createElement('div');
+        info.className = 'info';
+        info.innerHTML = `<span class="nome">${c.nome || '—'}</span>
+                          <span class="partido">${c.partido || ''}</span>`;
 
-        const partidoSpan = document.createElement('span');
-        partidoSpan.className = 'partido';
-        partidoSpan.textContent = c.partido || '';
-
-        const votosSpan = document.createElement('span');
-        votosSpan.className = 'votos';
-        votosSpan.textContent = formatarNumero(c.votos || 0);
-
-        const percentualSpan = document.createElement('span');
-        percentualSpan.className = 'percentual';
+        const votosDiv = document.createElement('div');
         const perc = totalVotos > 0 ? ((c.votos || 0) / totalVotos) * 100 : 0;
-        percentualSpan.textContent = formatarPercentual(perc);
+        votosDiv.innerHTML = `<div class="votos">${fmtNum(c.votos || 0)}</div>
+                              <div class="percentual">${fmtPct(perc)}</div>`;
 
-        div.appendChild(nomeSpan);
-        div.appendChild(partidoSpan);
-        div.appendChild(votosSpan);
-        div.appendChild(percentualSpan);
+        div.appendChild(info);
+        div.appendChild(votosDiv);
         resultadoDiv.appendChild(div);
       });
 
-      // Exibe total geral.
-      totalVotosSpan.textContent = formatarNumero(totalVotos);
-      totalGeralDiv.style.display = 'flex';
+      // Total geral
+      const totalDiv = document.createElement('div');
+      totalDiv.className = 'total-geral';
+      totalDiv.innerHTML = `<span>Total de votos válidos no exterior</span>
+                            <span class="valor">${fmtNum(totalVotos)}</span>`;
+      resultadoDiv.appendChild(totalDiv);
 
-      // Exibe timestamp do arquivo, se disponível.
+      // Timestamp do arquivo
       if (dados.dg && dados.hg) {
         timestampArquivoSpan.textContent = `${dados.dg} ${dados.hg}`;
       } else {
         timestampArquivoSpan.textContent = '—';
       }
 
-      // Atualiza horário da última consulta.
-      const agora = new Date();
-      ultimaAtualizacaoSpan.textContent = `Última consulta: ${agora.toLocaleTimeString('pt-BR')}`;
+      // Última consulta
+      ultimaConsultaSpan.textContent = new Date().toLocaleTimeString('pt-BR');
     }
 
-    // Busca os dados da API.
-    async function carregarDados() {
-      loadingDiv.style.display = 'block';
-      erroDiv.textContent = '';
-      resultadoDiv.innerHTML = '';
-      totalGeralDiv.style.display = 'none';
-      btnAtualizar.disabled = true;
-
-      try {
-        const resposta = await fetch(URL_BASE + '?t=' + Date.now()); // evita cache
-        if (!resposta.ok) {
-          throw new Error(`Erro HTTP ${resposta.status}`);
-        }
-        const json = await resposta.json();
-        dadosAtuais = json;
-        renderizar(json);
-      } catch (e) {
-        console.error(e);
-        erroDiv.textContent = `Falha ao carregar os dados: ${e.message}. Verifique se a eleição está disponível ou tente novamente mais tarde.`;
-        loadingDiv.style.display = 'none';
-      } finally {
-        btnAtualizar.disabled = false;
-      }
-    }
-
-    // Evento do botão.
+    // Eventos
     btnAtualizar.addEventListener('click', carregarDados);
+    turnoSelect.addEventListener('change', carregarDados);
 
-    // Carrega automaticamente ao abrir a página.
+    // Carrega automaticamente ao abrir
     carregarDados();
-
-    // Opcional: atualizar a cada 30 segundos.
-    // setInterval(carregarDados, 30000);
   </script>
 </body>
 </html>
