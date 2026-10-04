@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Apuração Exterior - Agregador de Boletins de Urna 2026</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Google Fonts: Montserrat & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,700;0,800;0,900;1,800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Font Awesome 6 Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #0b0f19;
+      color: #f3f4f6;
+    }
+    .heading-font {
+      font-family: 'Montserrat', sans-serif;
+    }
+    .pulse-dot {
+      animation: pulseAnimation 1.6s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    @keyframes pulseAnimation {
+      0%, 100% { opacity: 1; }
+      50% { opacity: .25; }
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col p-4 sm:p-6 lg:p-8">
+
+  <div class="max-w-6xl w-full mx-auto space-y-6">
+
+    <!-- Header -->
+    <header class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-800 pb-4">
+      <div class="flex items-center space-x-3">
+        <div class="bg-indigo-600 text-white w-10 h-10 rounded-xl flex items-center justify-center font-black text-lg shadow-md">
+          <i class="fa-solid fa-earth-americas"></i>
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <h1 class="heading-font text-xl lg:text-2xl font-black uppercase text-white">Votação no Exterior (ZZ)</h1>
+            <span class="bg-emerald-500/20 text-emerald-400 text-xs font-bold px-2.5 py-0.5 rounded-full border border-emerald-500/30 flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-emerald-500 pulse-dot"></span>
+              FUSOS ORIENTAIS
+            </span>
+          </div>
+          <p class="text-xs text-gray-400">Totalizador de Boletins de Urna (BUs) & Seções Encerradas</p>
+        </div>
+      </div>
+
+      <div class="flex items-center space-x-3">
+        <a href="/" class="bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs font-bold py-2 px-3 rounded-lg border border-gray-700 transition flex items-center gap-1.5">
+          <i class="fa-solid fa-tv text-blue-400"></i>
+          <span>Voltar ao Slide</span>
+        </a>
+
+        <button id="btn-puxar-tse" class="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold py-2 px-4 rounded-lg transition flex items-center gap-2 shadow">
+          <i class="fa-solid fa-cloud-arrow-down" id="puxar-icon"></i>
+          <span>Consultar Seções no TSE</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Placar Agregado Total -->
+    <section class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+      
+      <!-- Bloco Principal do Líder -->
+      <div class="bg-[#111827] border-2 border-emerald-500/80 rounded-2xl p-5 shadow-2xl relative overflow-hidden flex flex-col justify-between">
+        <div class="flex items-center justify-between text-xs text-emerald-400 font-bold uppercase tracking-wider mb-2">
+          <span>1º Lugar no Exterior</span>
+          <span class="bg-emerald-500/20 px-2 py-0.5 rounded border border-emerald-500/30">Líder Parcial</span>
+        </div>
+        <div class="my-2">
+          <h2 class="heading-font text-2xl sm:text-3xl font-black text-white" id="lider-nome">LULA</h2>
+          <div class="flex items-baseline space-x-2 mt-1">
+            <span class="heading-font text-5xl font-black text-white" id="lider-perc">0,00%</span>
+            <span class="text-xs text-gray-400 font-medium" id="lider-votos">0 votos</span>
+          </div>
+        </div>
+        <div class="w-full bg-gray-800 rounded-full h-2 overflow-hidden mt-3">
+          <div class="bg-red-600 h-full transition-all duration-700" id="lider-bar" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <!-- Bloco do 2º Colocado -->
+      <div class="bg-[#111827] border border-gray-800 rounded-2xl p-5 shadow-xl flex flex-col justify-between">
+        <div class="flex items-center justify-between text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">
+          <span>2º Lugar no Exterior</span>
+          <span class="bg-gray-800 text-gray-300 px-2 py-0.5 rounded border border-gray-700">Vice-Líder</span>
+        </div>
+        <div class="my-2">
+          <h2 class="heading-font text-2xl sm:text-3xl font-black text-gray-200" id="vice-nome">FLÁVIO BOLSONARO</h2>
+          <div class="flex items-baseline space-x-2 mt-1">
+            <span class="heading-font text-5xl font-black text-gray-200" id="vice-perc">0,00%</span>
+            <span class="text-xs text-gray-400 font-medium" id="vice-votos">0 votos</span>
+          </div>
+        </div>
+        <div class="w-full bg-gray-800 rounded-full h-2 overflow-hidden mt-3">
+          <div class="bg-blue-600 h-full transition-all duration-700" id="vice-bar" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <!-- Métricas Gerais de Urnas no Exterior -->
+      <div class="bg-[#111827] border border-gray-800 rounded-2xl p-5 shadow-xl flex flex-col justify-between space-y-3">
+        <div class="text-xs text-gray-400 font-bold uppercase tracking-wider">
+          Totalização das Seções Computadas
+        </div>
+        <div class="space-y-2 text-xs">
+          <div class="flex justify-between py-1 border-b border-gray-800">
+            <span class="text-gray-400">Total de Votos Válidos:</span>
+            <span class="font-bold text-white text-sm" id="metric-validos">0</span>
+          </div>
+          <div class="flex justify-between py-1 border-b border-gray-800">
+            <span class="text-gray-400">Diferença Nominal:</span>
+            <span class="font-bold text-emerald-400 text-sm" id="metric-diferenca">0 votos</span>
+          </div>
+          <div class="flex justify-between py-1 border-b border-gray-800">
+            <span class="text-gray-400">Cidades/Postos Processados:</span>
+            <span class="font-bold text-white text-sm" id="metric-cidades">0</span>
+          </div>
+        </div>
+        <div class="text-[11px] text-gray-500">
+          Dados processados dos Boletins de Urna emitidos e afixados nos postos eleitorais.
+        </div>
+      </div>
+
+    </section>
+
+    <!-- Tabela por Cidade/País do Exterior -->
+    <section class="bg-[#111827] border border-gray-800 rounded-2xl p-5 shadow-xl space-y-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="heading-font text-base font-bold text-white flex items-center gap-2">
+            <i class="fa-solid fa-flag text-blue-400"></i>
+            Votação por Posto Consular / Cidade
+          </h3>
+          <p class="text-xs text-gray-400">Relação das localidades onde a votação já foi concluída</p>
+        </div>
+        <span class="text-xs text-gray-400" id="label-status-busca">Aguardando comando</span>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-gray-800/80 text-gray-300 uppercase tracking-wider font-semibold border-b border-gray-700">
+            <tr>
+              <th class="py-2.5 px-3">País / Cidade</th>
+              <th class="py-2.5 px-3">Cód. Município</th>
+              <th class="py-2.5 px-3">Líder no Posto</th>
+              <th class="py-2.5 px-3 text-right">Votos 1º</th>
+              <th class="py-2.5 px-3">2º Colocado</th>
+              <th class="py-2.5 px-3 text-right">Votos 2º</th>
+              <th class="py-2.5 px-3 text-center">Status</th>
+            </tr>
+          </thead>
+          <tbody id="tabela-exterior-body" class="divide-y divide-gray-800">
+            <tr>
+              <td colspan="7" class="text-center py-6 text-gray-500">
+                Clique no botão "Consultar Seções no TSE" para puxar as cidades do exterior.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </div>
+
+  <script>
+    // Cidades do exterior que encerram a votação antes do Brasil (Oceania, Ásia e Europa)
+    const CIDADES_EXTERIOR = [
+      { nome: "Wellington (Nova Zelândia)", cod: "30635", fuso: "UTC+13" },
+      { nome: "Auckland (Nova Zelândia)", cod: "30643", fuso: "UTC+13" },
+      { nome: "Sydney (Austrália)", cod: "30554", fuso: "UTC+11" },
+      { nome: "Melbourne (Austrália)", cod: "30619", fuso: "UTC+11" },
+      { nome: "Brisbane (Austrália)", cod: "30627", fuso: "UTC+10" },
+      { nome: "Tóquio (Japão)", cod: "30570", fuso: "UTC+9" },
+      { nome: "Nagóia (Japão)", cod: "30058", fuso: "UTC+9" },
+      { nome: "Hamamatsu (Japão)", cod: "29572", fuso: "UTC+9" },
+      { nome: "Seul (Coreia do Sul)", cod: "30473", fuso: "UTC+9" },
+      { nome: "Pequim (China)", cod: "30279", fuso: "UTC+8" },
+      { nome: "Xangai (China)", cod: "30600", fuso: "UTC+8" },
+      { nome: "Cingapura (Cingapura)", cod: "29432", fuso: "UTC+8" }
+    ];
+
+    let totalLula = 0;
+    let totalFlavio = 0;
+    let totalOutros = 0;
+
+    async function consultarDadosExterior() {
+      const btn = document.getElementById('btn-puxar-tse');
+      const icon = document.getElementById('puxar-icon');
+      const statusLabel = document.getElementById('label-status-busca');
+      const tbody = document.getElementById('tabela-exterior-body');
+
+      btn.disabled = true;
+      icon.classList.add('fa-spin');
+      statusLabel.innerText = "Consultando endpoints do TSE...";
+
+      totalLula = 0;
+      totalFlavio = 0;
+      totalOutros = 0;
+      let cidadesProcessadas = 0;
+      let linhasHtml = '';
+
+      for (const cidade of CIDADES_EXTERIOR) {
+        statusLabel.innerText = `Consultando ${cidade.nome}...`;
+        
+        // URL da cidade no exterior (UF zz)
+        const url = `https://resultados.tse.jus.br/oficial/ele2026/6257/dados/zz/zz${cidade.cod}-c0001-e006257-u.json`;
+
+        try {
+          const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+          if (res.ok) {
+            const data = await res.json();
+            
+            // Extrai os candidatos da estrutura unificada
+            let cands = [];
+            if (data.carg && data.carg[0] && data.carg[0].agr) {
+              data.carg[0].agr.forEach(agr => {
+                agr.par.forEach(par => {
+                  par.cand.forEach(c => {
+                    cands.push({
+                      n: c.n,
+                      nome: c.nmu,
+                      vap: parseInt(c.vap || '0', 10),
+                      pvap: c.pvap || '0,00'
+                    });
+                  });
+                });
+              });
+            }
+
+            cands.sort((a, b) => b.vap - a.vap);
+
+            const vLula = cands.find(c => c.n === "13") ? cands.find(c => c.n === "13").vap : 0;
+            const vFlavio = cands.find(c => c.n === "22") ? cands.find(c => c.n === "22").vap : 0;
+
+            totalLula += vLula;
+            totalFlavio += vFlavio;
+            cidadesProcessadas++;
+
+            const c1 = cands[0] || { nome: "--", vap: 0 };
+            const c2 = cands[1] || { nome: "--", vap: 0 };
+
+            linhasHtml += `
+              <tr class="hover:bg-gray-800/40 transition">
+                <td class="py-2.5 px-3 font-bold text-white">${cidade.nome}</td>
+                <td class="py-2.5 px-3 text-gray-400 font-mono">${cidade.cod}</td>
+                <td class="py-2.5 px-3 font-bold ${c1.n === '13' ? 'text-red-400' : 'text-blue-400'}">${c1.nome}</td>
+                <td class="py-2.5 px-3 text-right font-bold text-white">${c1.vap.toLocaleString('pt-BR')}</td>
+                <td class="py-2.5 px-3 font-medium text-gray-300">${c2.nome}</td>
+                <td class="py-2.5 px-3 text-right font-medium text-gray-400">${c2.vap.toLocaleString('pt-BR')}</td>
+                <td class="py-2.5 px-3 text-center">
+                  <span class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold px-2 py-0.5 rounded">Processado</span>
+                </td>
+              </tr>
+            `;
+          } else {
+            // Se o TSE ainda não liberou o arquivo JSON consolidado da cidade (antes das 17h)
+            linhasHtml += `
+              <tr class="hover:bg-gray-800/20 opacity-60">
+                <td class="py-2.5 px-3 text-gray-300">${cidade.nome}</td>
+                <td class="py-2.5 px-3 text-gray-500 font-mono">${cidade.cod}</td>
+                <td colspan="4" class="py-2.5 px-3 text-center text-gray-500 italic">Votação encerrada no fuso local. Arquivo retido pelo TSE até as 17h (Brasília).</td>
+                <td class="py-2.5 px-3 text-center">
+                  <span class="bg-amber-500/20 text-amber-400 border border-amber-500/30 text-[10px] font-bold px-2 py-0.5 rounded">Retido TSE</span>
+                </td>
+              </tr>
+            `;
+          }
+        } catch (e) {
+          console.error(e);
+        }
+
+        // Aguarda 100ms entre as chamadas para não estourar rate-limit do TSE
+        await new Promise(r => setTimeout(r, 100));
+      }
+
+      tbody.innerHTML = linhasHtml;
+      atualizarTotais(cidadesProcessadas);
+
+      btn.disabled = false;
+      icon.classList.remove('fa-spin');
+      statusLabel.innerText = `Concluído: ${cidadesProcessadas} cidade(s) com dados.`;
+    }
+
+    function atualizarTotais(cidades) {
+      const totalValidos = totalLula + totalFlavio;
+      document.getElementById('metric-validos').innerText = totalValidos.toLocaleString('pt-BR');
+      document.getElementById('metric-cidades').innerText = `${cidades} de ${CIDADES_EXTERIOR.length}`;
+
+      if (totalValidos > 0) {
+        const pLula = ((totalLula / totalValidos) * 100).toFixed(2).replace('.', ',');
+        const pFlavio = ((totalFlavio / totalValidos) * 100).toFixed(2).replace('.', ',');
+
+        document.getElementById('lider-votos').innerText = `${totalLula.toLocaleString('pt-BR')} votos`;
+        document.getElementById('vice-votos').innerText = `${totalFlavio.toLocaleString('pt-BR')} votos`;
+
+        document.getElementById('lider-perc').innerText = `${pLula}%`;
+        document.getElementById('vice-perc').innerText = `${pFlavio}%`;
+
+        document.getElementById('lider-bar').style.width = `${(totalLula / totalValidos) * 100}%`;
+        document.getElementById('vice-bar').style.width = `${(totalFlavio / totalValidos) * 100}%`;
+
+        const dif = Math.abs(totalLula - totalFlavio);
+        document.getElementById('metric-diferenca').innerText = `${dif.toLocaleString('pt-BR')} votos`;
+      }
+    }
+
+    document.getElementById('btn-puxar-tse').addEventListener('click', consultarDadosExterior);
+  </script>
+</body>
+</html>
